@@ -1,0 +1,125 @@
+# Decisiones, pendientes y roadmap
+
+## Decisiones confirmadas
+
+| ID | Decisión |
+|---|---|
+| D-001 | Elegir AbsenceLens como TFM provisional definitivo frente a MockSeed por equilibrio entre valor, claridad y plazo. |
+| D-002 | Angular como frontend. |
+| D-003 | Procesamiento local y sin backend para el MVP. |
+| D-004 | Un único archivo `.xlsx`, una hoja y un perfil de importación versionado. |
+| D-005 | Mantener el archivo completo; no separar vacaciones por rendimiento. |
+| D-006 | Dos listados imprescindibles: recurrencia corta y larga duración. |
+| D-007 | Corto: duración total efectiva `<= 30` días inclusivos. |
+| D-008 | Recurrente: al menos 5 episodios cortos en una ventana de 12 meses. |
+| D-009 | Largo: duración total efectiva `>= 180` días inclusivos. |
+| D-010 | Fecha de corte configurable; por defecto, último día del mes anterior. |
+| D-011 | `31/12/2999` representa una ausencia activa y se recorta a la fecha de corte. |
+| D-012 | La clasificación corta/larga usa duración total; las métricas del periodo usan la intersección. |
+| D-013 | Avisar cuando clasificación total y días visibles en el periodo difieran. |
+| D-014 | En recurrencia se cuenta por fecha de inicio; avisar sobre episodios que solo intersectan la ventana. |
+| D-015 | Top largo: 10 globales; con filtros, top 10 del conjunto de centros seleccionados. |
+| D-016 | Top largo ordenado por el episodio individual más largo. |
+| D-017 | Top recurrente ordenado por cantidad y luego por mayor recencia. |
+| D-018 | Días consecutivos de vacaciones se agrupan en un periodo. |
+| D-019 | No existen solapamientos; la adyacencia futura usa el día natural anterior/posterior. |
+| D-020 | Revisada por D-027 y P-008: `Ubicación - Código` identifica el centro aeroportuario y `Ambito` una zona interna; no se asumirá el estándar del código hasta confirmarlo. |
+| D-021 | Permitir filtrar y ordenar por todas las columnas importadas. |
+| D-022 | Ignorar la duración calculada por el sistema de origen y recalcularla. |
+| D-023 | Exportación de resultados en Excel. |
+| D-024 | Diseño inicial para portátil/escritorio; móvil y tableta fuera del MVP. |
+| D-025 | El TFM y la IA de desarrollo solo usarán datos sintéticos. |
+| D-026 | `Nº Nómina` se importa y conserva como texto, incluidos los ceros a la izquierda; no se normaliza como número. |
+| D-027 | La cabecera confirmada es `Ambito`, sin tilde. |
+| D-028 | El inventario categórico autorizado se conserva literalmente para mostrar, filtrar, ordenar y exportar, sin asignarle semántica adicional ni usarlo como factor de candidatura. |
+| D-029 | El valor de origen `Número de Días de Ausencia a Fecha de hoy` se descarta y se sustituye, cuando corresponda, por cálculos internos. |
+| D-030 | Las capturas con datos o métricas reales a nivel de trabajador no se incorporan ni se transforman; las referencias visuales se recrean desde cero con datos sintéticos. |
+| D-031 | Los dashboards anteriores son referencias de cobertura informativa, no plantillas que deban reproducirse de forma idéntica. |
+| D-032 | La interfaz debe respetar la paleta de marca en cabeceras, cuerpos, superficies y estados mediante tokens de color autorizados, sin conservar ni muestrear capturas con datos reales. |
+| D-033 | Las capturas con datos reales solo permiten confirmar estructura y necesidades visuales; sus filas, métricas y combinaciones no se analizan ni se trasladan al producto. |
+| D-034 | La cabecera exacta del perfil inicial es `Convenio Laboral`; su aparición como `Convenio` en una captura se debía al ancho visible de la columna. |
+| D-035 | `Plan Salarial - Desc.` y `Ubicación - Código` son cabeceras confirmadas y no se aceptan como valores de sus propias columnas. |
+| D-036 | R1 evalúa únicamente la ventana inclusiva de 12 meses que termina en la fecha de corte; para `31/07/2026`, comienza el `01/08/2025`. |
+| D-037 | R2 muestra una fila por empleado con su episodio largo máximo y acceso al detalle de los demás episodios. |
+| D-038 | R2 ordena por duración máxima descendente, inicio del episodio representativo descendente y `Nº Nómina` ascendente. |
+| D-039 | Los episodios iniciados después del corte se excluyen con advertencia; los iniciados antes y terminados después se recortan al corte conservando el final original en el detalle. |
+| D-040 | El conjunto inicial de aceptación consta de un `.xlsx` de una hoja y 73 filas completamente sintéticas, acompañado por 23 casos con resultado conocido. |
+| D-041 | El primer incremento vertical `I-001` cubre importación, validación, normalización, fecha de corte, R1, explicación y borrado de sesión. |
+| D-042 | R2, filtros avanzados, exportación, dashboards, festivos, rendimiento y PWA quedan fuera de `I-001`. |
+| D-043 | Para `I-001`, cualquier error de fila bloquea el análisis y se informa mediante fila, columna y código saneado, sin incluir el valor de la celda. |
+| D-044 | La librería `.xlsx` se elegirá mediante un ADR breve antes de implementar su adaptador, manteniendo el dominio independiente. |
+| D-045 | WSL 2 con Ubuntu es el entorno canónico de desarrollo; el repositorio reside en el sistema de archivos Linux y no en `/mnt/c`. |
+| D-046 | La base técnica inicial usa Node.js 24 mediante NVM, pnpm 11.19 mediante Corepack y Angular 22 con CLI local al proyecto. |
+| D-047 | El adaptador de `WorkbookReader` utilizará `read-excel-file` 9.3.x para lectura local en navegador, según ADR-0001. |
+
+## Preguntas abiertas
+
+Estas preguntas no bloquean el primer incremento vertical si las capacidades asociadas permanecen fuera de él.
+
+| ID | Pregunta | Responsable |
+|---|---|---|
+| P-001 | ¿Cuál era la fórmula exacta del porcentaje de absentismo, especialmente su denominador? | Usuario interesado |
+| P-006 | ¿Qué columnas exactas debe contener cada exportación de resultados y en qué orden? | Usuario interesado |
+| P-008 | ¿Los códigos de `Ubicación - Código` son identificadores IATA, códigos internos o un inventario mixto? Debe confirmarse antes de construir la futura tabla de centro, comunidad autónoma y municipio. | Usuario interesado |
+| P-010 | ¿La sección equivalente a “limitaciones” debe formar parte de AbsenceLens? No existe una columna ni una regla asociada en el alcance actual. | Usuario interesado |
+| P-011 | Para cubrir el dashboard de tasa, ¿se proporcionará una fuente autorizada de horas netas/trabajadas y la fórmula, o se sustituirá por métricas derivables del Excel de ausencias? | Usuario interesado |
+| P-012 | ¿Cuáles son los valores exactos de la paleta de marca, preferiblemente en hexadecimal, y sus usos previstos? | Usuario interesado |
+
+## Preguntas para gráficos
+
+- Fórmula y fuente del denominador del porcentaje de absentismo.
+- Periodicidad: mensual dentro de cada año o una cifra por año.
+- Rangos de edad.
+- Edad calculada en fecha de corte o fecha del episodio.
+- Qué significa “contrato”: `Tipo de Empleado`, `Fijo/Temporal`, convenio u otra dimensión.
+- Tratamiento de categorías desconocidas o sin informar.
+- Tamaño mínimo de grupo para mostrar agregados.
+- Recreaciones completamente sintéticas de los dashboards anteriores; las capturas recibidas no son admisibles como activos por contener información real a nivel de trabajador.
+- Cobertura funcional detallada en `docs/09-cobertura-dashboards.md`.
+
+## Datos y recursos pendientes
+
+- Recreaciones sintéticas de los dos dashboards anteriores.
+- Lista de códigos de centro realmente necesarios y confirmación de su estándar.
+- Tabla de código de centro a comunidad autónoma y municipio, después de confirmar el estándar.
+- Calendarios nacionales, autonómicos y locales para los años soportados.
+- Archivo sintético de aproximadamente 15.000 filas para rendimiento.
+
+## Decisiones técnicas todavía reversibles
+
+- Librería de lectura y escritura `.xlsx`.
+- Uso de Web Worker según mediciones reales.
+- Librería de gráficos.
+- Gestión de estado en Angular.
+- Estrategia de PWA/offline.
+- Fuente y formato de calendarios festivos.
+- Ubicación de iconos, tooltips y ayuda contextual.
+
+## Roadmap posterior al MVP
+
+1. Coincidencias adyacentes a vacaciones.
+2. Coincidencias con festivos nacionales, autonómicos y locales.
+3. Más estadísticas agregadas.
+4. PWA y ejecución offline instalada.
+5. Perfiles de importación externos.
+6. Editor visual y almacenamiento de perfiles.
+7. Compatibilidad con distintos formatos de Excel.
+8. Posible proceso complementario de seudonimización bajo control de la organización.
+
+No incluir predicción, puntuación individual, fraude, recomendaciones laborales o investigación automática en el roadmap funcional del producto.
+
+## Estimación actual
+
+Con el formato tabular confirmado, el MVP presentable se estima provisionalmente en 40–55 horas utilizando Codex y GPT-5.6 con revisión humana. Debe reservarse tiempo específico para documentación, presentación, vídeo, despliegue y margen FUNDAE.
+
+## Criterio para comenzar la implementación
+
+El criterio previo queda satisfecho el 14/08/2026:
+
+1. existe un Excel completamente sintético y estructuralmente representativo;
+2. están cerradas P-002 y las decisiones del top largo;
+3. existen 23 casos de aceptación con resultados conocidos para las reglas y normalizaciones esenciales.
+
+La implementación puede comenzar cuando el usuario lo indique expresamente y después de dejar delimitado el primer incremento vertical. La fórmula de absentismo puede permanecer pendiente si los gráficos asociados se mantienen fuera de ese incremento.
+
+El primer incremento queda delimitado en `docs/11-primer-incremento-vertical.md` y está preparado para comenzar cuando exista una orden expresa de implementación.
