@@ -29,6 +29,8 @@ export const EXPECTED_HEADERS = [
 export type ImportColumn = (typeof EXPECTED_HEADERS)[number];
 
 export type ImportErrorCode =
+  | 'FILE_EXTENSION_INVALID'
+  | 'WORKBOOK_READ_FAILED'
   | 'WORKBOOK_SHEET_COUNT'
   | 'HEADER_MISSING'
   | 'HEADER_ADDITIONAL'

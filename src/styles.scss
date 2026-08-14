@@ -1,1 +1,11 @@
-/* You can add global styles to this file, and also import other style files */
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: #f3f7f8;
+  font-family: Inter, Aptos, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+}
