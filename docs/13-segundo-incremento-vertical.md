@@ -2,7 +2,7 @@
 
 ## Estado
 
-Especificación aprobada el 15/08/2026 y preparada para implementar.
+Especificación aprobada e implementada el 15/08/2026. La verificación automatizada está completada; la revisión visual manual se registra como pendiente en `docs/14-verificacion-i002.md`.
 
 ## Identificación
 
@@ -114,7 +114,7 @@ Las decisiones están registradas como D-049 a D-052 en `docs/06-decisiones-pend
 - Implementar R2 en un módulo de dominio independiente de R1, Angular y la librería de Excel.
 - Evitar generalizar prematuramente `CandidateMatch`, que actualmente representa el contrato concreto de R1.
 
-### Operación de dominio propuesta
+### Operaciones de dominio implementadas
 
 `buildLongDurationCandidates(episodes, cutoff)`
 
