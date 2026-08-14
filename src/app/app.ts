@@ -15,7 +15,7 @@ import {
   validateAbsenceWorkbook,
 } from './application/import-profile';
 import { normalizeAbsenceRecords } from './application/normalize';
-import { EpisodeWarningCode } from './domain/absence';
+import { AbsenceEpisode, EpisodeWarningCode } from './domain/absence';
 import {
   LocalDate,
   compareLocalDates,
@@ -23,6 +23,11 @@ import {
   formatSpanishDate,
   parseIsoDate,
 } from './domain/local-date';
+import {
+  LongDurationCandidate,
+  buildLongDurationCandidates,
+  selectLongDurationTop,
+} from './domain/long-duration';
 import {
   CandidateMatch,
   EpisodeExclusionReason,
@@ -32,6 +37,7 @@ import {
 import { ReadExcelFileWorkbookReader } from './infrastructure/read-excel-file-workbook-reader';
 
 type Phase = 'idle' | 'reading' | 'validating' | 'ready' | 'analyzing' | 'results' | 'error';
+type ResultView = 'r1' | 'r2';
 
 interface AnalysisWarning {
   readonly row: number;
@@ -60,14 +66,27 @@ export class App {
   protected readonly sourceWarningCount = signal(0);
   protected readonly importedRowCount = signal(0);
   protected readonly candidates = signal<readonly CandidateMatch[]>([]);
+  protected readonly longCandidates = signal<readonly LongDurationCandidate[]>([]);
   protected readonly analysisWarnings = signal<readonly AnalysisWarning[]>([]);
   protected readonly selectedCandidate = signal<CandidateMatch | null>(null);
+  protected readonly selectedLongCandidate = signal<LongDurationCandidate | null>(null);
+  protected readonly selectedCentres = signal<readonly string[]>([]);
+  protected readonly resultView = signal<ResultView>('r1');
   protected readonly cutoffIso = signal(formatIsoDate(lastCompleteMonthCutoff(this.clock.today())));
   protected readonly busy = computed(() =>
     ['reading', 'validating', 'analyzing'].includes(this.phase()),
   );
   protected readonly canAnalyze = computed(
     () => this.phase() === 'ready' || this.phase() === 'results',
+  );
+  protected readonly availableCentres = computed(() =>
+    [...new Set(this.longCandidates().map((item) => item.representativeEpisode.workCentre))].sort(),
+  );
+  protected readonly longTop = computed(() =>
+    selectLongDurationTop(this.longCandidates(), new Set(this.selectedCentres())),
+  );
+  protected readonly resultCount = computed(() =>
+    this.resultView() === 'r1' ? this.candidates().length : this.longTop().length,
   );
 
   protected async selectFile(event: Event): Promise<void> {
@@ -119,7 +138,7 @@ export class App {
     }
 
     this.phase.set('analyzing');
-    this.statusMessage.set('Aplicando la regla R1…');
+    this.statusMessage.set('Aplicando las reglas R1 y R2…');
 
     const normalized = normalizeAbsenceRecords(this.records, cutoff);
     const window = recurrenceWindowFor(cutoff);
@@ -135,22 +154,56 @@ export class App {
         return [...own, ...intersection];
       }),
     );
-    this.candidates.set(findShortDurationRecurrences(normalized.episodes, cutoff));
+
+    const recurrenceCandidates = findShortDurationRecurrences(normalized.episodes, cutoff);
+    const longDurationCandidates = buildLongDurationCandidates(normalized.episodes, cutoff);
+    this.candidates.set(recurrenceCandidates);
+    this.longCandidates.set(longDurationCandidates);
+    this.selectedCentres.set([]);
     this.phase.set('results');
     this.statusMessage.set(
-      `Análisis completado: ${this.candidates().length} candidatos para revisión humana.`,
+      `Análisis completado: ${recurrenceCandidates.length} coincidencias R1 y ${longDurationCandidates.length} candidaturas R2 para revisión humana.`,
     );
   }
 
+  protected selectResultView(view: ResultView): void {
+    this.resultView.set(view);
+  }
+
+  protected toggleCentre(centre: string, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.selectedCentres.update((selected) =>
+      checked
+        ? [...new Set([...selected, centre])].sort()
+        : selected.filter((item) => item !== centre),
+    );
+  }
+
+  protected clearCentreFilter(): void {
+    this.selectedCentres.set([]);
+  }
+
+  protected isCentreSelected(centre: string): boolean {
+    return this.selectedCentres().includes(centre);
+  }
+
   protected openExplanation(candidate: CandidateMatch): void {
-    this.lastFocusedElement =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    this.captureFocus();
+    this.selectedLongCandidate.set(null);
     this.selectedCandidate.set(candidate);
-    setTimeout(() => this.explanationDialog?.nativeElement.focus());
+    this.focusDialog();
+  }
+
+  protected openLongExplanation(candidate: LongDurationCandidate): void {
+    this.captureFocus();
+    this.selectedCandidate.set(null);
+    this.selectedLongCandidate.set(candidate);
+    this.focusDialog();
   }
 
   protected closeExplanation(): void {
     this.selectedCandidate.set(null);
+    this.selectedLongCandidate.set(null);
     setTimeout(() => this.lastFocusedElement?.focus());
   }
 
@@ -178,6 +231,16 @@ export class App {
 
   protected formatDate(value: LocalDate): string {
     return formatSpanishDate(value);
+  }
+
+  protected longEpisodeStatus(episode: AbsenceEpisode): string {
+    if (episode.warnings.includes('OPEN_END')) {
+      return 'Activo';
+    }
+    if (episode.warnings.includes('END_AFTER_CUTOFF')) {
+      return 'Recortado al corte';
+    }
+    return 'Finalizado';
   }
 
   protected issueLabel(issue: ImportIssue): string {
@@ -220,6 +283,15 @@ export class App {
     return labels[reason];
   }
 
+  private captureFocus(): void {
+    this.lastFocusedElement =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  }
+
+  private focusDialog(): void {
+    setTimeout(() => this.explanationDialog?.nativeElement.focus());
+  }
+
   private fail(errors: readonly ImportIssue[]): void {
     this.records = [];
     this.importErrors.set(errors);
@@ -233,7 +305,11 @@ export class App {
 
   private resetResults(): void {
     this.candidates.set([]);
+    this.longCandidates.set([]);
     this.analysisWarnings.set([]);
     this.selectedCandidate.set(null);
+    this.selectedLongCandidate.set(null);
+    this.selectedCentres.set([]);
+    this.resultView.set('r1');
   }
 }

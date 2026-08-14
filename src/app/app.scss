@@ -622,6 +622,98 @@ table {
   }
 }
 
+.rule-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+
+  .rule-card {
+    margin-top: 18px;
+  }
+}
+
+.result-tabs {
+  padding: 18px 30px 0;
+  display: flex;
+  gap: 8px;
+}
+
+.tab-button {
+  padding: 10px 14px;
+  color: var(--muted);
+  background: transparent;
+  border-bottom: 3px solid transparent;
+
+  span {
+    margin-left: 5px;
+    font-size: 0.78rem;
+  }
+
+  &.active {
+    color: var(--deep);
+    background: white;
+    border-bottom-color: var(--aqua);
+  }
+}
+
+.centre-filter {
+  margin: 20px 30px;
+  padding: 16px;
+  background: #f7fafb;
+  border: 1px solid #cadadd;
+
+  legend {
+    color: var(--deep);
+    font-weight: 800;
+  }
+
+  small {
+    display: block;
+    margin-top: 10px;
+    color: var(--muted);
+  }
+}
+
+.centre-filter-row,
+.centre-options,
+.centre-options label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.centre-filter-row {
+  justify-content: space-between;
+}
+
+.centre-options {
+  flex-wrap: wrap;
+
+  label {
+    padding: 7px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+}
+
+.status-label {
+  color: #285d3d;
+  font-size: 0.78rem;
+  font-weight: 800;
+
+  &.warning {
+    color: #694008;
+  }
+}
+
+.episode-list article.representative {
+  border-left-color: var(--deep);
+}
+
+.episode-warning {
+  color: #694008;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -635,7 +727,8 @@ table {
 
 @media (max-width: 800px) {
   .hero,
-  .import-grid {
+  .import-grid,
+  .rule-grid {
     grid-template-columns: 1fr;
   }
   .summary-grid,
@@ -662,6 +755,9 @@ table {
   .shell {
     width: min(100% - 24px, 1180px);
     padding-top: 18px;
+  }
+  .centre-filter-row {
+    flex-wrap: wrap;
   }
   .hero,
   .workspace {

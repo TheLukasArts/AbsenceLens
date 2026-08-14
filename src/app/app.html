@@ -9,8 +9,8 @@
 <main id="main-content" class="shell">
   <section class="hero" aria-labelledby="page-title">
     <div>
-      <p class="eyebrow">Primer incremento · R1</p>
-      <h1 id="page-title">Recurrencia de ausencias cortas</h1>
+      <p class="eyebrow">Análisis temporal · R1 y R2</p>
+      <h1 id="page-title">Ausencias explicables para revisión humana</h1>
       <p>
         Importa un libro <strong>completamente sintético</strong>. Los datos se leen y analizan en
         este navegador, sin backend, persistencia ni telemetría.
@@ -98,7 +98,7 @@
       <span class="step">2</span>
       <div>
         <h2 id="analysis-title">Configurar y analizar</h2>
-        <p>Ventana única de 12 meses terminada en la fecha de corte.</p>
+        <p>Una fecha de corte para recurrencia corta y larga duración.</p>
       </div>
     </div>
 
@@ -118,7 +118,7 @@
         [disabled]="!canAnalyze() || busy()"
         (click)="analyze()"
       >
-        Ejecutar análisis R1
+        Ejecutar análisis
       </button>
       <button
         class="secondary"
@@ -130,12 +130,18 @@
       </button>
     </div>
 
-    <aside class="rule-card">
-      <strong>Regla R1-v1</strong>
-      <span>Episodio corto: hasta 30 días inclusivos.</span>
-      <span>Coincidencia: al menos 5 inicios dentro de la ventana.</span>
-      <span>Orden: cantidad, recencia y nómina.</span>
-    </aside>
+    <div class="rule-grid">
+      <aside class="rule-card">
+        <strong>R1-v1 · Recurrencia corta</strong>
+        <span>Hasta 30 días; al menos 5 inicios en 12 meses.</span>
+        <span>Orden: cantidad, recencia y nómina.</span>
+      </aside>
+      <aside class="rule-card">
+        <strong>R2-v1 · Larga duración</strong>
+        <span>Desde 180 días efectivos; una fila por empleado.</span>
+        <span>Orden: duración, inicio y nómina.</span>
+      </aside>
+    </div>
   </section>
 
   @if (phase() === 'results') {
@@ -145,7 +151,34 @@
           <p class="eyebrow">Resultados explicables</p>
           <h2 id="results-title">Candidatos para revisión humana</h2>
         </div>
-        <span class="result-count">{{ candidates().length }}</span>
+        <span class="result-count" aria-label="Resultados visibles">{{ resultCount() }}</span>
+      </div>
+
+      <div class="result-tabs" role="tablist" aria-label="Listados de análisis">
+        <button
+          id="tab-r1"
+          class="tab-button"
+          [class.active]="resultView() === 'r1'"
+          type="button"
+          role="tab"
+          [attr.aria-selected]="resultView() === 'r1'"
+          aria-controls="panel-r1"
+          (click)="selectResultView('r1')"
+        >
+          Recurrencia corta <span>{{ candidates().length }}</span>
+        </button>
+        <button
+          id="tab-r2"
+          class="tab-button"
+          [class.active]="resultView() === 'r2'"
+          type="button"
+          role="tab"
+          [attr.aria-selected]="resultView() === 'r2'"
+          aria-controls="panel-r2"
+          (click)="selectResultView('r2')"
+        >
+          Larga duración <span>{{ longCandidates().length }}</span>
+        </button>
       </div>
 
       @if (analysisWarnings().length > 0) {
@@ -162,50 +195,168 @@
           </ul>
         </details>
       }
-
-      @if (candidates().length === 0) {
-        <p class="empty-result">
-          No se encontraron coincidencias para la fecha de corte seleccionada.
-        </p>
+      @if (resultView() === 'r1') {
+        <div id="panel-r1" role="tabpanel" aria-labelledby="tab-r1">
+          @if (candidates().length === 0) {
+            <p class="empty-result">
+              No se encontraron coincidencias R1 para la fecha de corte seleccionada.
+            </p>
+          } @else {
+            <div class="table-wrap">
+              <table>
+                <caption class="sr-only">
+                  Candidatos de recurrencia corta ordenados según R1
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Posición</th>
+                    <th scope="col">Nº Nómina</th>
+                    <th scope="col">Episodios</th>
+                    <th scope="col">Inicio más reciente</th>
+                    <th scope="col">Ventana evaluada</th>
+                    <th scope="col"><span class="sr-only">Acciones</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (
+                    candidate of candidates();
+                    track candidate.employeeId;
+                    let position = $index
+                  ) {
+                    <tr>
+                      <td>{{ position + 1 }}</td>
+                      <td>
+                        <code class="employee-id">{{ candidate.employeeId }}</code>
+                      </td>
+                      <td>
+                        <strong>{{ candidate.episodeCount }}</strong>
+                      </td>
+                      <td>{{ formatDate(candidate.mostRecentStart) }}</td>
+                      <td>
+                        {{ formatDate(candidate.window.start) }}–{{
+                          formatDate(candidate.window.end)
+                        }}
+                      </td>
+                      <td>
+                        <button
+                          class="link-button"
+                          type="button"
+                          (click)="openExplanation(candidate)"
+                        >
+                          Ver explicación
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
       } @else {
-        <div class="table-wrap">
-          <table>
-            <caption class="sr-only">
-              Candidatos de recurrencia corta ordenados según R1
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Posición</th>
-                <th scope="col">Nº Nómina</th>
-                <th scope="col">Episodios</th>
-                <th scope="col">Inicio más reciente</th>
-                <th scope="col">Ventana evaluada</th>
-                <th scope="col"><span class="sr-only">Acciones</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (candidate of candidates(); track candidate.employeeId; let position = $index) {
-                <tr>
-                  <td>{{ position + 1 }}</td>
-                  <td>
-                    <code class="employee-id">{{ candidate.employeeId }}</code>
-                  </td>
-                  <td>
-                    <strong>{{ candidate.episodeCount }}</strong>
-                  </td>
-                  <td>{{ formatDate(candidate.mostRecentStart) }}</td>
-                  <td>
-                    {{ formatDate(candidate.window.start) }}–{{ formatDate(candidate.window.end) }}
-                  </td>
-                  <td>
-                    <button class="link-button" type="button" (click)="openExplanation(candidate)">
-                      Ver explicación
-                    </button>
-                  </td>
-                </tr>
+        <div id="panel-r2" role="tabpanel" aria-labelledby="tab-r2">
+          <fieldset class="centre-filter">
+            <legend>Filtrar por centro del episodio representativo</legend>
+            <div class="centre-filter-row">
+              <div class="centre-options">
+                @for (centre of availableCentres(); track centre) {
+                  <label>
+                    <input
+                      type="checkbox"
+                      [checked]="isCentreSelected(centre)"
+                      (change)="toggleCentre(centre, $event)"
+                    />
+                    <span>{{ centre }}</span>
+                  </label>
+                }
+              </div>
+              <button
+                class="secondary"
+                type="button"
+                [disabled]="selectedCentres().length === 0"
+                (click)="clearCentreFilter()"
+              >
+                Mostrar todos
+              </button>
+            </div>
+            <small>
+              @if (selectedCentres().length === 0) {
+                Todos los centros representativos.
+              } @else {
+                Centros seleccionados: {{ selectedCentres().join(', ') }}.
               }
-            </tbody>
-          </table>
+              Se muestran como máximo diez empleados.
+            </small>
+          </fieldset>
+
+          @if (longTop().length === 0) {
+            <p class="empty-result">
+              No se encontraron candidaturas R2 para los centros seleccionados.
+            </p>
+          } @else {
+            <div class="table-wrap">
+              <table>
+                <caption class="sr-only">
+                  Top de empleados con episodios de larga duración según R2
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Posición</th>
+                    <th scope="col">Nº Nómina</th>
+                    <th scope="col">Duración máxima</th>
+                    <th scope="col">Inicio</th>
+                    <th scope="col">Final efectivo</th>
+                    <th scope="col">Centro</th>
+                    <th scope="col">Episodios largos</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col"><span class="sr-only">Acciones</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (candidate of longTop(); track candidate.employeeId; let position = $index) {
+                    <tr>
+                      <td>{{ position + 1 }}</td>
+                      <td>
+                        <code class="employee-id">{{ candidate.employeeId }}</code>
+                      </td>
+                      <td>
+                        <strong>{{ candidate.maximumDuration }} días</strong>
+                      </td>
+                      <td>{{ formatDate(candidate.representativeEpisode.start) }}</td>
+                      <td>
+                        {{
+                          candidate.representativeEpisode.effectiveEnd
+                            ? formatDate(candidate.representativeEpisode.effectiveEnd)
+                            : '—'
+                        }}
+                      </td>
+                      <td>
+                        <code>{{ candidate.representativeEpisode.workCentre }}</code>
+                      </td>
+                      <td>{{ candidate.longEpisodeCount }}</td>
+                      <td>
+                        <span
+                          class="status-label"
+                          [class.warning]="candidate.representativeEpisode.warnings.length > 0"
+                        >
+                          {{ longEpisodeStatus(candidate.representativeEpisode) }}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          class="link-button"
+                          type="button"
+                          (click)="openLongExplanation(candidate)"
+                        >
+                          Ver explicación
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
         </div>
       }
     </section>
@@ -219,7 +370,7 @@
       class="explanation"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="explanation-title"
+      aria-labelledby="explanation-title-r1"
       tabindex="-1"
       (click)="$event.stopPropagation()"
       (keydown)="handleDialogKeydown($event)"
@@ -227,7 +378,7 @@
       <header>
         <div>
           <p class="eyebrow">{{ selected.explanation.ruleId }}</p>
-          <h2 id="explanation-title">Explicación de {{ selected.employeeId }}</h2>
+          <h2 id="explanation-title-r1">Explicación de {{ selected.employeeId }}</h2>
         </div>
         <button
           class="close-button"
@@ -283,6 +434,94 @@
               <div>
                 <dt>Días en ventana</dt>
                 <dd>{{ item.daysInsideWindow }}</dd>
+              </div>
+              <div>
+                <dt>Fila de origen</dt>
+                <dd>{{ item.episode.sourceRow }}</dd>
+              </div>
+            </dl>
+          </article>
+        }
+      </div>
+    </section>
+  </div>
+}
+
+@if (selectedLongCandidate(); as selected) {
+  <div class="modal-backdrop" (click)="closeExplanation()">
+    <section
+      #explanationDialog
+      class="explanation"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="explanation-title-r2"
+      tabindex="-1"
+      (click)="$event.stopPropagation()"
+      (keydown)="handleDialogKeydown($event)"
+    >
+      <header>
+        <div>
+          <p class="eyebrow">{{ selected.explanation.ruleId }}</p>
+          <h2 id="explanation-title-r2">Explicación de {{ selected.employeeId }}</h2>
+        </div>
+        <button
+          class="close-button"
+          type="button"
+          aria-label="Cerrar explicación"
+          (click)="closeExplanation()"
+        >
+          ×
+        </button>
+      </header>
+
+      <dl class="explanation-summary">
+        <div>
+          <dt>Fecha de corte</dt>
+          <dd>{{ formatDate(selected.explanation.cutoff) }}</dd>
+        </div>
+        <div>
+          <dt>Umbral</dt>
+          <dd>{{ selected.explanation.threshold }} días</dd>
+        </div>
+        <div>
+          <dt>Duración máxima</dt>
+          <dd>{{ selected.maximumDuration }} días</dd>
+        </div>
+        <div>
+          <dt>Centro representativo</dt>
+          <dd>{{ selected.representativeEpisode.workCentre }}</dd>
+        </div>
+      </dl>
+
+      <div class="episode-list">
+        @for (item of selected.explanation.episodes; track item.episode.id) {
+          <article [class.representative]="item.representative">
+            <div>
+              <strong>
+                {{ formatDate(item.episode.start) }}–{{
+                  item.episode.effectiveEnd ? formatDate(item.episode.effectiveEnd) : '—'
+                }}
+              </strong>
+              <span>
+                {{ item.representative ? 'Episodio representativo' : 'Otro episodio largo' }}
+                · {{ longEpisodeStatus(item.episode) }}
+              </span>
+              @for (warning of item.episode.warnings; track warning) {
+                <small class="episode-warning">{{ warningLabel(warning) }}</small>
+              }
+            </div>
+            <dl>
+              <div>
+                <dt>Duración efectiva</dt>
+                <dd>{{ item.effectiveDuration }} días</dd>
+              </div>
+              <div>
+                <dt>Final original</dt>
+                <dd>{{ formatDate(item.episode.originalEnd) }}</dd>
+              </div>
+              <div>
+                <dt>Centro</dt>
+                <dd>{{ item.episode.workCentre }}</dd>
               </div>
               <div>
                 <dt>Fila de origen</dt>

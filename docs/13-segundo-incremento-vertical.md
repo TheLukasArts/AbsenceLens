@@ -116,9 +116,11 @@ Las decisiones están registradas como D-049 a D-052 en `docs/06-decisiones-pend
 
 ### Operación de dominio propuesta
 
-`findLongDurationCandidates(episodes, cutoff, selectedCentres)`
+`buildLongDurationCandidates(episodes, cutoff)`
 
-La operación construye una candidatura global por empleado, filtra por el centro del episodio representativo, ordena y limita a diez. El conjunto vacío de centros representa la vista global.
+`selectLongDurationTop(candidates, selectedCentres, limit)`
+
+La primera operación construye y ordena una candidatura global por empleado. La segunda filtra por el centro del episodio representativo y limita el resultado sin reagrupar episodios. El conjunto vacío de centros representa la vista global.
 
 ### Estado de interfaz
 
