@@ -6,7 +6,7 @@ AbsenceLens es una aplicación web local-first que importa un único archivo Exc
 
 ## Estado
 
-Requisitos del primer incremento cerrados e implementación de `I-001` iniciada. El entorno de desarrollo canónico es WSL 2 y el procesamiento continúa siendo íntegramente local.
+`I-001` está implementado y verificado. `I-002`, centrado en larga duración, está propuesto para revisión antes de comenzar su implementación. El entorno de desarrollo canónico es WSL 2 y el procesamiento continúa siendo íntegramente local.
 
 ## Documentación de referencia
 
@@ -22,6 +22,7 @@ Requisitos del primer incremento cerrados e implementación de `I-001` iniciada.
 - [Casos de aceptación sintéticos](docs/10-casos-aceptacion.md)
 - [Primer incremento vertical](docs/11-primer-incremento-vertical.md)
 - [Verificación del incremento I-001](docs/12-verificacion-i001.md)
+- [Propuesta del segundo incremento vertical](docs/13-segundo-incremento-vertical.md)
 - [ADR-0001: lector XLSX en navegador](docs/adr/0001-lector-xlsx.md)
 
 ## Desarrollo local
