@@ -21,6 +21,7 @@ Requisitos del primer incremento cerrados e implementación de `I-001` iniciada.
 - [Cobertura funcional de los dashboards](docs/09-cobertura-dashboards.md)
 - [Casos de aceptación sintéticos](docs/10-casos-aceptacion.md)
 - [Primer incremento vertical](docs/11-primer-incremento-vertical.md)
+- [Verificación del incremento I-001](docs/12-verificacion-i001.md)
 - [ADR-0001: lector XLSX en navegador](docs/adr/0001-lector-xlsx.md)
 
 ## Desarrollo local
