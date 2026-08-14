@@ -6,7 +6,7 @@ AbsenceLens es una aplicación web local-first que importa un único archivo Exc
 
 ## Estado
 
-`I-001` está implementado y verificado. `I-002`, centrado en larga duración, está propuesto para revisión antes de comenzar su implementación. El entorno de desarrollo canónico es WSL 2 y el procesamiento continúa siendo íntegramente local.
+`I-001` está implementado y verificado. La especificación de `I-002`, centrada en larga duración, está aprobada y preparada para su implementación. El entorno de desarrollo canónico es WSL 2 y el procesamiento continúa siendo íntegramente local.
 
 ## Documentación de referencia
 

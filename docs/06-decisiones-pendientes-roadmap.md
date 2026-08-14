@@ -52,6 +52,10 @@
 | D-046 | La base técnica inicial usa Node.js 24 mediante NVM, pnpm 11.19 mediante Corepack y Angular 22 con CLI local al proyecto. |
 | D-047 | El adaptador de `WorkbookReader` utilizará `read-excel-file` 9.3.x para lectura local en navegador, según ADR-0001. |
 | D-048 | Las mejoras no críticas detectadas tras verificar `I-001` se registran y se abordan después de completar las capacidades troncales del MVP; los defectos de corrección, privacidad o accesibilidad mantienen prioridad inmediata. |
+| D-049 | El detalle R2 muestra los episodios largos considerados para el empleado, no todos sus episodios cortos. |
+| D-050 | R2 mantiene al empleado como unidad principal: primero construye una candidatura global por empleado y después el filtro de centros actúa sobre el centro de su episodio representativo. Las estadísticas futuras por centro tendrán un cálculo agregado independiente. |
+| D-051 | Una única acción de análisis calcula R1 y R2; alternar listados o cambiar el filtro de centros no vuelve a leer ni normalizar el Excel. |
+| D-052 | `I-002` no introduce un periodo visible independiente ni métricas de días dentro de ese periodo; muestra la duración total efectiva a fecha de corte. |
 
 ## Preguntas abiertas
 

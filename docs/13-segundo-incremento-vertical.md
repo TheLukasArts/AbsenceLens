@@ -2,7 +2,7 @@
 
 ## Estado
 
-Propuesta pendiente de revisión y aprobación antes de implementar.
+Especificación aprobada el 15/08/2026 y preparada para implementar.
 
 ## Identificación
 
@@ -41,17 +41,18 @@ En menos de tres minutos, una persona debe poder:
   1. duración representativa descendente;
   2. inicio representativo descendente;
   3. `Nº Nómina` ascendente.
-- Limitar el resultado a los primeros diez empleados después de aplicar el filtro de centros.
+- Limitar el resultado a los primeros diez empleados después de construir las candidaturas y aplicar el filtro de centros.
 
 ### Filtro de centros
 
-- Sin centros seleccionados, calcular el top sobre todos los episodios.
+- Sin centros seleccionados, calcular el top sobre todas las candidaturas de empleados.
 - Permitir seleccionar uno o varios valores de `Ubicación - Código`.
-- Aplicar el filtro a los episodios antes de agruparlos por empleado y elegir el representativo.
-- Si un empleado tiene episodios en varios centros, considerar únicamente los pertenecientes a los centros seleccionados.
-- Mostrar al empleado una sola vez aunque tenga episodios en varios centros seleccionados.
-- Derivar las opciones disponibles de los registros normalizados de la sesión y ordenarlas alfabéticamente, sin interpretar el significado de los códigos.
-- Recalcular R2 al cambiar la selección, sin volver a leer ni normalizar el archivo.
+- Construir primero una única candidatura global por empleado y elegir su episodio largo representativo.
+- Aplicar después el filtro al centro del episodio representativo de cada candidatura.
+- Si un empleado tiene episodios en varios centros, conservar su episodio representativo global y mostrar los demás episodios largos en el detalle.
+- No dividir ni duplicar al empleado por centros.
+- Derivar las opciones disponibles de los centros representativos de las candidaturas R2 y ordenarlas alfabéticamente, sin interpretar el significado de los códigos.
+- Recalcular el top al cambiar la selección, sin volver a leer, normalizar ni reagrupar el archivo.
 
 ### Interfaz
 
@@ -81,14 +82,14 @@ En menos de tres minutos, una persona debe poder:
 - Advertencias por final abierto o final ordinario posterior al corte.
 - Mensajes saneados que no incluyan contenido adicional de las celdas.
 
-## Decisiones propuestas para aprobación
+## Decisiones confirmadas
 
 1. El detalle R2 muestra los episodios largos considerados, no todos los episodios cortos del empleado.
-2. El filtro de centros se aplica a los episodios antes de agrupar por empleado y elegir el representativo.
+2. R2 construye primero una candidatura global por empleado; el filtro de centros se aplica después al centro de su episodio representativo.
 3. La misma acción de análisis calcula R1 y R2; cambiar de listado o filtro no vuelve a leer el Excel.
 4. `I-002` no introduce un periodo visible independiente. Por ello muestra duración total efectiva, pero no una métrica de días dentro de un periodo todavía inexistente.
 
-Estas decisiones mantienen el incremento pequeño y determinista. Tras su aprobación deben registrarse en `docs/06-decisiones-pendientes-roadmap.md`.
+Las decisiones están registradas como D-049 a D-052 en `docs/06-decisiones-pendientes-roadmap.md`.
 
 ## Fuera del incremento
 
@@ -117,7 +118,7 @@ Estas decisiones mantienen el incremento pequeño y determinista. Tras su aproba
 
 `findLongDurationCandidates(episodes, cutoff, selectedCentres)`
 
-La operación devuelve el conjunto completo ya ordenado y limitado a diez. El conjunto vacío de centros representa la vista global.
+La operación construye una candidatura global por empleado, filtra por el centro del episodio representativo, ordena y limita a diez. El conjunto vacío de centros representa la vista global.
 
 ### Estado de interfaz
 
@@ -184,8 +185,8 @@ Con el fixture y la fecha de corte de referencia, R2 devuelve exactamente:
 - Ordenación global y desempates entre empleados.
 - Límite de diez resultados.
 - Filtro único, filtro múltiple y filtro sin coincidencias.
-- Empleado con episodios en centros distintos.
-- Invariantes: una fila por empleado y ningún centro excluido.
+- Empleado con episodios en centros distintos cuyo episodio representativo determina su pertenencia al filtro.
+- Invariantes: una fila por empleado y centro representativo incluido en la selección.
 
 ### Integración
 
@@ -216,7 +217,7 @@ Cada paso debe dejar las comprobaciones en verde y producir un cambio revisable 
 
 ## Definición de terminado
 
-- Las cuatro decisiones propuestas están aprobadas y registradas.
+- Las cuatro decisiones están registradas como D-049 a D-052.
 - Los criterios funcionales, de privacidad y accesibilidad están demostrados.
 - El fixture produce exactamente el top global y los subconjuntos documentados.
 - R1 continúa produciendo exactamente sus siete candidatos.
