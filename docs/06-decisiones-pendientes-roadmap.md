@@ -51,6 +51,7 @@
 | D-045 | WSL 2 con Ubuntu es el entorno canónico de desarrollo; el repositorio reside en el sistema de archivos Linux y no en `/mnt/c`. |
 | D-046 | La base técnica inicial usa Node.js 24 mediante NVM, pnpm 11.19 mediante Corepack y Angular 22 con CLI local al proyecto. |
 | D-047 | El adaptador de `WorkbookReader` utilizará `read-excel-file` 9.3.x para lectura local en navegador, según ADR-0001. |
+| D-048 | Las mejoras no críticas detectadas tras verificar `I-001` se registran y se abordan después de completar las capacidades troncales del MVP; los defectos de corrección, privacidad o accesibilidad mantienen prioridad inmediata. |
 
 ## Preguntas abiertas
 
@@ -94,6 +95,16 @@ Estas preguntas no bloquean el primer incremento vertical si las capacidades aso
 - Estrategia de PWA/offline.
 - Fuente y formato de calendarios festivos.
 - Ubicación de iconos, tooltips y ayuda contextual.
+
+## Mejoras diferidas tras I-001
+
+| ID | Mejora | Prioridad y criterio de aceptación |
+|---|---|---|
+| M-001 | Detectar y omitir de forma determinista las filas finales añadidas por las herramientas de exportación: totales, filas vacías, descripción de filtros y avisos de truncamiento. | Media; debe resolverse antes de cerrar el MVP y probarse sin confundir una fila válida con metadatos del informe. |
+| M-002 | Permitir que las filas válidas continúen aunque existan filas erróneas, excluyendo estas últimas y mostrándolas en una zona de revisión mediante número de fila, columna y código saneado, nunca mediante el contenido de la celda. | Media; no es urgente para el siguiente incremento, pero debe diseñarse junto con M-001 y nunca omitir errores silenciosamente. Revisa en el futuro el comportamiento bloqueante de D-043. |
+| M-003 | Sustituir en la interfaz “Excel sintético” por una expresión más clara, preferentemente “archivo Excel de prueba” o “archivo de demostración”; conservar “sintético” en la documentación técnica y de privacidad. | Baja; mejora de lenguaje de producto. |
+| M-004 | Sustituir “14 columnas exactas” por una ayuda visual que permita previsualizar las columnas esperadas. | Baja; la ayuda debe ser comprensible con teclado y lector de pantalla y no depender únicamente de un icono. |
+| M-005 | Revisar conjuntamente los demás ajustes visuales una vez que las capacidades troncales del MVP estén operativas. | Baja; agrupar el pulido para mantener pequeños los incrementos actuales. |
 
 ## Roadmap posterior al MVP
 

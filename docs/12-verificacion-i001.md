@@ -4,7 +4,7 @@ Fecha de referencia: 14/08/2026.
 
 ## Estado
 
-La implementación funcional de `I-001` está completa en el repositorio local WSL. La aceptación se mantiene abierta hasta realizar una revisión visual manual en navegador.
+La implementación funcional de `I-001` está completa en el repositorio local WSL. El usuario confirmó el 15/08/2026 que el flujo funciona en navegador. Los ajustes visuales y de tolerancia de importación detectados durante la revisión quedan registrados en `docs/06-decisiones-pendientes-roadmap.md` para abordarlos después de las capacidades troncales.
 
 ## Evidencia automatizada
 
@@ -38,9 +38,9 @@ La implementación funcional de `I-001` está completa en el repositorio local W
 |        6 | `910006`  |         5 |
 |        7 | `910002`  |         5 |
 
-## Revisión manual pendiente
+## Revisión manual realizada
 
-Ejecutar `pnpm start` desde WSL y comprobar en navegador:
+El usuario ejecutó la aplicación desde WSL y confirmó que el flujo funciona. Para la revisión final del MVP se mantienen estas comprobaciones detalladas:
 
 1. composición y legibilidad en portátil;
 2. correspondencia visual de la paleta de marca;
