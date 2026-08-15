@@ -15,6 +15,19 @@ import {
   validateAbsenceWorkbook,
 } from './application/import-profile';
 import { normalizeAbsenceRecords } from './application/normalize';
+import { CandidateTable, buildCandidateReport } from './application/report';
+import {
+  REVIEW_COLUMNS,
+  ReviewColumn,
+  ReviewColumnFilter,
+  ReviewRow,
+  SortDirection,
+  buildReviewRows,
+  queryReviewRows,
+  reviewColumnLabel,
+  reviewValue,
+  rowsForEmployees,
+} from './application/review';
 import { AbsenceEpisode, EpisodeWarningCode } from './domain/absence';
 import {
   LocalDate,
@@ -35,6 +48,8 @@ import {
   recurrenceWindowFor,
 } from './domain/recurrence';
 import { ReadExcelFileWorkbookReader } from './infrastructure/read-excel-file-workbook-reader';
+import { BrowserDownload } from './infrastructure/browser-download';
+import { WriteExcelFileReportExporter } from './infrastructure/write-excel-file-report-exporter';
 
 type Phase = 'idle' | 'reading' | 'validating' | 'ready' | 'analyzing' | 'results' | 'error';
 type ResultView = 'r1' | 'r2';
@@ -56,6 +71,8 @@ export class App {
   @ViewChild('explanationDialog') private explanationDialog?: ElementRef<HTMLElement>;
 
   private readonly workbookReader = inject(ReadExcelFileWorkbookReader);
+  private readonly reportExporter = inject(WriteExcelFileReportExporter);
+  private readonly browserDownload = inject(BrowserDownload);
   private readonly clock = inject(SystemClock);
   private lastFocusedElement: HTMLElement | null = null;
   private records: readonly ValidatedAbsenceRecord[] = [];
@@ -67,15 +84,26 @@ export class App {
   protected readonly importedRowCount = signal(0);
   protected readonly candidates = signal<readonly CandidateMatch[]>([]);
   protected readonly longCandidates = signal<readonly LongDurationCandidate[]>([]);
+  protected readonly reviewRows = signal<readonly ReviewRow[]>([]);
+  protected readonly reviewFilters = signal<readonly ReviewColumnFilter[]>([]);
+  protected readonly reviewFilterColumn = signal<ReviewColumn>('employeeId');
+  protected readonly reviewFilterValue = signal('');
+  protected readonly reviewStartFromIso = signal('');
+  protected readonly reviewStartToIso = signal('');
+  protected readonly reviewSortColumn = signal<ReviewColumn>('start');
+  protected readonly reviewSortDirection = signal<SortDirection>('asc');
   protected readonly analysisWarnings = signal<readonly AnalysisWarning[]>([]);
   protected readonly selectedCandidate = signal<CandidateMatch | null>(null);
   protected readonly selectedLongCandidate = signal<LongDurationCandidate | null>(null);
   protected readonly selectedCentres = signal<readonly string[]>([]);
   protected readonly resultView = signal<ResultView>('r1');
   protected readonly cutoffIso = signal(formatIsoDate(lastCompleteMonthCutoff(this.clock.today())));
-  protected readonly busy = computed(() =>
-    ['reading', 'validating', 'analyzing'].includes(this.phase()),
+  protected readonly busy = computed(
+    () => ['reading', 'validating', 'analyzing'].includes(this.phase()) || this.exportBusy(),
   );
+  protected readonly exportBusy = signal(false);
+  protected readonly exportError = signal('');
+  protected readonly reviewColumns = REVIEW_COLUMNS;
   protected readonly canAnalyze = computed(
     () => this.phase() === 'ready' || this.phase() === 'results',
   );
@@ -85,8 +113,45 @@ export class App {
   protected readonly longTop = computed(() =>
     selectLongDurationTop(this.longCandidates(), new Set(this.selectedCentres())),
   );
+  private readonly reviewEmployeeIds = computed(
+    () =>
+      new Set(
+        (this.resultView() === 'r1' ? this.candidates() : this.longTop()).map(
+          (candidate) => candidate.employeeId,
+        ),
+      ),
+  );
+  protected readonly reviewRowsForView = computed(() =>
+    rowsForEmployees(this.reviewRows(), this.reviewEmployeeIds()),
+  );
+  protected readonly filteredReviewRows = computed(() =>
+    queryReviewRows(this.reviewRowsForView(), {
+      filters: this.reviewFilters(),
+      startFrom: parseIsoDate(this.reviewStartFromIso()),
+      startTo: parseIsoDate(this.reviewStartToIso()),
+      sortColumn: this.reviewSortColumn(),
+      sortDirection: this.reviewSortDirection(),
+    }),
+  );
+  private readonly filteredEmployeeIds = computed(
+    () => new Set(this.filteredReviewRows().map((row) => row.employeeId)),
+  );
+  protected readonly visibleCandidates = computed(() =>
+    this.candidates().filter((candidate) => this.filteredEmployeeIds().has(candidate.employeeId)),
+  );
+  protected readonly visibleLongCandidates = computed(() =>
+    this.longTop().filter((candidate) => this.filteredEmployeeIds().has(candidate.employeeId)),
+  );
+  protected readonly hasReviewFilters = computed(
+    () =>
+      this.reviewFilters().length > 0 ||
+      this.reviewStartFromIso().length > 0 ||
+      this.reviewStartToIso().length > 0,
+  );
   protected readonly resultCount = computed(() =>
-    this.resultView() === 'r1' ? this.candidates().length : this.longTop().length,
+    this.resultView() === 'r1'
+      ? this.visibleCandidates().length
+      : this.visibleLongCandidates().length,
   );
 
   protected async selectFile(event: Event): Promise<void> {
@@ -159,6 +224,7 @@ export class App {
     const longDurationCandidates = buildLongDurationCandidates(normalized.episodes, cutoff);
     this.candidates.set(recurrenceCandidates);
     this.longCandidates.set(longDurationCandidates);
+    this.reviewRows.set(buildReviewRows(this.records, normalized.episodes));
     this.selectedCentres.set([]);
     this.phase.set('results');
     this.statusMessage.set(
@@ -185,6 +251,84 @@ export class App {
 
   protected isCentreSelected(centre: string): boolean {
     return this.selectedCentres().includes(centre);
+  }
+
+  protected setReviewFilterColumn(value: string): void {
+    if (REVIEW_COLUMNS.some((column) => column.key === value)) {
+      this.reviewFilterColumn.set(value as ReviewColumn);
+    }
+  }
+
+  protected addReviewFilter(): void {
+    const value = this.reviewFilterValue().trim();
+    if (!value) return;
+
+    const column = this.reviewFilterColumn();
+    this.reviewFilters.update((filters) => [
+      ...filters.filter((filter) => filter.column !== column),
+      { column, value },
+    ]);
+    this.reviewFilterValue.set('');
+  }
+
+  protected removeReviewFilter(column: ReviewColumn): void {
+    this.reviewFilters.update((filters) => filters.filter((filter) => filter.column !== column));
+  }
+
+  protected clearReviewFilters(): void {
+    this.reviewFilters.set([]);
+    this.reviewFilterValue.set('');
+    this.reviewStartFromIso.set('');
+    this.reviewStartToIso.set('');
+  }
+
+  protected setReviewSortColumn(value: string): void {
+    if (REVIEW_COLUMNS.some((column) => column.key === value)) {
+      this.reviewSortColumn.set(value as ReviewColumn);
+    }
+  }
+
+  protected setReviewSortDirection(value: string): void {
+    if (value === 'asc' || value === 'desc') {
+      this.reviewSortDirection.set(value);
+    }
+  }
+
+  protected reviewCell(row: ReviewRow, column: ReviewColumn): string {
+    return reviewValue(row, column);
+  }
+
+  protected reviewFilterLabel(filter: ReviewColumnFilter): string {
+    return `${reviewColumnLabel(filter.column)}: ${filter.value}`;
+  }
+
+  protected async exportCurrentView(): Promise<void> {
+    const cutoff = parseIsoDate(this.cutoffIso());
+    if (!cutoff || this.filteredReviewRows().length === 0) return;
+
+    this.exportBusy.set(true);
+    this.exportError.set('');
+    try {
+      const report = buildCandidateReport({
+        view: this.resultView(),
+        cutoff,
+        filters: this.reviewFilters(),
+        startFrom: parseIsoDate(this.reviewStartFromIso()),
+        startTo: parseIsoDate(this.reviewStartToIso()),
+        candidateTable: this.currentCandidateTable(),
+        records: this.filteredReviewRows(),
+        warningCount: this.analysisWarnings().length,
+      });
+      const blob = await this.reportExporter.create(report);
+      this.browserDownload.save(blob, report.fileName);
+      this.statusMessage.set(
+        `Exportación preparada: ${report.sheets.length} hojas y ${this.filteredReviewRows().length} registros.`,
+      );
+    } catch {
+      this.exportError.set('No se pudo generar el Excel. Los datos permanecen en esta sesión.');
+    } finally {
+      this.exportBusy.set(false);
+    }
   }
 
   protected openExplanation(candidate: CandidateMatch): void {
@@ -303,6 +447,50 @@ export class App {
     );
   }
 
+  private currentCandidateTable(): CandidateTable {
+    if (this.resultView() === 'r1') {
+      return {
+        headers: [
+          'Nº Nómina',
+          'Episodios contabilizados',
+          'Inicio más reciente',
+          'Inicio de ventana',
+          'Fin de ventana',
+        ],
+        rows: this.visibleCandidates().map((candidate) => [
+          candidate.employeeId,
+          candidate.episodeCount,
+          formatSpanishDate(candidate.mostRecentStart),
+          formatSpanishDate(candidate.window.start),
+          formatSpanishDate(candidate.window.end),
+        ]),
+      };
+    }
+
+    return {
+      headers: [
+        'Nº Nómina',
+        'Duración máxima',
+        'Inicio representativo',
+        'Final efectivo',
+        'Centro representativo',
+        'Episodios largos',
+        'Estado',
+      ],
+      rows: this.visibleLongCandidates().map((candidate) => [
+        candidate.employeeId,
+        candidate.maximumDuration,
+        formatSpanishDate(candidate.representativeEpisode.start),
+        candidate.representativeEpisode.effectiveEnd
+          ? formatSpanishDate(candidate.representativeEpisode.effectiveEnd)
+          : '',
+        candidate.representativeEpisode.workCentre,
+        candidate.longEpisodeCount,
+        this.longEpisodeStatus(candidate.representativeEpisode),
+      ]),
+    };
+  }
+
   private resetResults(): void {
     this.candidates.set([]);
     this.longCandidates.set([]);
@@ -311,5 +499,13 @@ export class App {
     this.selectedLongCandidate.set(null);
     this.selectedCentres.set([]);
     this.resultView.set('r1');
+    this.reviewRows.set([]);
+    this.reviewFilters.set([]);
+    this.reviewFilterValue.set('');
+    this.reviewStartFromIso.set('');
+    this.reviewStartToIso.set('');
+    this.reviewSortColumn.set('start');
+    this.reviewSortDirection.set('asc');
+    this.exportError.set('');
   }
 }

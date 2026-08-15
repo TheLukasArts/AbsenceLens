@@ -725,6 +725,140 @@ table {
   border: 0;
 }
 
+.review {
+  margin: 28px 30px 30px;
+  padding-top: 26px;
+  border-top: 1px solid #c8dadd;
+}
+
+.review-heading,
+.review-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.review-heading {
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h3 {
+    color: var(--deep);
+    font-size: 1.25rem;
+  }
+
+  p:not(.eyebrow) {
+    margin-top: 5px;
+    color: var(--muted);
+  }
+}
+
+.review-counts {
+  min-width: 190px;
+  padding: 12px 16px;
+  color: white;
+  background: var(--deep);
+  border-radius: 9px;
+
+  strong,
+  span {
+    display: block;
+  }
+
+  strong {
+    font-size: 1.45rem;
+  }
+
+  span {
+    font-size: 0.78rem;
+  }
+}
+
+.review-controls {
+  margin-top: 18px;
+  padding: 15px;
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.2fr;
+  gap: 14px;
+  background: var(--ice);
+  border: 1px solid #c8dadd;
+  border-radius: 9px;
+}
+
+.filter-builder,
+.date-filter,
+.sort-controls {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+
+  label {
+    flex: 1;
+  }
+
+  span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+
+  input,
+  select {
+    width: 100%;
+    min-height: 40px;
+  }
+}
+
+.review-actions {
+  margin: 12px 0;
+
+  > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+.filter-chips {
+  color: var(--muted);
+  font-size: 0.8rem;
+
+  button {
+    padding: 6px 9px;
+    color: var(--deep);
+    background: #dceff1;
+    border-radius: 999px;
+  }
+}
+
+.review-table {
+  max-height: 440px;
+
+  table {
+    min-width: 2200px;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  td {
+    white-space: nowrap;
+  }
+}
+
+.export-error {
+  color: #8b1e24;
+  font-weight: 800;
+}
+
 @media (max-width: 800px) {
   .hero,
   .import-grid,
@@ -734,6 +868,17 @@ table {
   .summary-grid,
   .explanation-summary {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .review-controls {
+    grid-template-columns: 1fr;
+  }
+  .review-heading,
+  .review-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .review-counts {
+    min-width: 0;
   }
   .episode-list article {
     display: block;
@@ -762,6 +907,10 @@ table {
   .hero,
   .workspace {
     padding: 22px;
+  }
+  .review {
+    margin-right: 20px;
+    margin-left: 20px;
   }
   .summary-grid,
   .explanation-summary {

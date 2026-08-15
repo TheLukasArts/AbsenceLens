@@ -197,7 +197,7 @@
       }
       @if (resultView() === 'r1') {
         <div id="panel-r1" role="tabpanel" aria-labelledby="tab-r1">
-          @if (candidates().length === 0) {
+          @if (visibleCandidates().length === 0) {
             <p class="empty-result">
               No se encontraron coincidencias R1 para la fecha de corte seleccionada.
             </p>
@@ -219,7 +219,7 @@
                 </thead>
                 <tbody>
                   @for (
-                    candidate of candidates();
+                    candidate of visibleCandidates();
                     track candidate.employeeId;
                     let position = $index
                   ) {
@@ -289,7 +289,7 @@
             </small>
           </fieldset>
 
-          @if (longTop().length === 0) {
+          @if (visibleLongCandidates().length === 0) {
             <p class="empty-result">
               No se encontraron candidaturas R2 para los centros seleccionados.
             </p>
@@ -313,7 +313,11 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (candidate of longTop(); track candidate.employeeId; let position = $index) {
+                  @for (
+                    candidate of visibleLongCandidates();
+                    track candidate.employeeId;
+                    let position = $index
+                  ) {
                     <tr>
                       <td>{{ position + 1 }}</td>
                       <td>
@@ -359,6 +363,155 @@
           }
         </div>
       }
+
+      <section class="review" aria-labelledby="review-title">
+        <div class="review-heading">
+          <div>
+            <p class="eyebrow">Detalle operativo</p>
+            <h3 id="review-title">Revisar registros y preparar informe</h3>
+            <p>Los filtros acotan la revisión visible; las reglas R1 y R2 no se recalculan.</p>
+          </div>
+          <div class="review-counts" aria-live="polite">
+            <strong>{{ resultCount() }}</strong>
+            <span>empleados · {{ filteredReviewRows().length }} registros</span>
+          </div>
+        </div>
+
+        <div class="review-controls">
+          <div class="filter-builder">
+            <label>
+              <span>Columna</span>
+              <select
+                data-testid="review-filter-column"
+                [ngModel]="reviewFilterColumn()"
+                (ngModelChange)="setReviewFilterColumn($event)"
+              >
+                @for (column of reviewColumns; track column.key) {
+                  <option [value]="column.key">{{ column.label }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              <span>Contiene</span>
+              <input
+                data-testid="review-filter-value"
+                type="text"
+                [ngModel]="reviewFilterValue()"
+                (ngModelChange)="reviewFilterValue.set($event)"
+                (keydown.enter)="addReviewFilter()"
+              />
+            </label>
+            <button
+              class="secondary"
+              type="button"
+              [disabled]="!reviewFilterValue().trim()"
+              (click)="addReviewFilter()"
+            >
+              Añadir filtro
+            </button>
+          </div>
+
+          <div class="date-filter">
+            <label>
+              <span>Inicio desde</span>
+              <input
+                type="date"
+                [ngModel]="reviewStartFromIso()"
+                (ngModelChange)="reviewStartFromIso.set($event)"
+              />
+            </label>
+            <label>
+              <span>Inicio hasta</span>
+              <input
+                type="date"
+                [ngModel]="reviewStartToIso()"
+                (ngModelChange)="reviewStartToIso.set($event)"
+              />
+            </label>
+          </div>
+
+          <div class="sort-controls">
+            <label>
+              <span>Ordenar por</span>
+              <select [ngModel]="reviewSortColumn()" (ngModelChange)="setReviewSortColumn($event)">
+                @for (column of reviewColumns; track column.key) {
+                  <option [value]="column.key">{{ column.label }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              <span>Dirección</span>
+              <select
+                [ngModel]="reviewSortDirection()"
+                (ngModelChange)="setReviewSortDirection($event)"
+              >
+                <option value="asc">Ascendente</option>
+                <option value="desc">Descendente</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="review-actions">
+          <div class="filter-chips" aria-label="Filtros activos">
+            @for (filter of reviewFilters(); track filter.column) {
+              <button type="button" (click)="removeReviewFilter(filter.column)">
+                {{ reviewFilterLabel(filter) }} <span aria-hidden="true">×</span>
+              </button>
+            }
+            @if (!hasReviewFilters()) {
+              <span>Sin filtros adicionales</span>
+            }
+          </div>
+          <div>
+            <button
+              class="secondary"
+              type="button"
+              [disabled]="!hasReviewFilters()"
+              (click)="clearReviewFilters()"
+            >
+              Limpiar filtros
+            </button>
+            <button
+              class="primary"
+              data-testid="export-report"
+              type="button"
+              [disabled]="filteredReviewRows().length === 0 || exportBusy()"
+              (click)="exportCurrentView()"
+            >
+              {{ exportBusy() ? 'Preparando…' : 'Exportar informe XLSX' }}
+            </button>
+          </div>
+        </div>
+
+        @if (exportError()) {
+          <p class="export-error" role="alert">{{ exportError() }}</p>
+        }
+
+        <div class="table-wrap review-table">
+          <table>
+            <caption class="sr-only">
+              Registros de ausencia visibles para la revisión actual
+            </caption>
+            <thead>
+              <tr>
+                @for (column of reviewColumns; track column.key) {
+                  <th scope="col">{{ column.label }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of filteredReviewRows(); track row.sourceRow) {
+                <tr>
+                  @for (column of reviewColumns; track column.key) {
+                    <td>{{ reviewCell(row, column.key) }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
     </section>
   }
 </main>
