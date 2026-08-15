@@ -6,7 +6,7 @@ AbsenceLens es una aplicación web local-first que importa un único archivo Exc
 
 ## Estado
 
-`I-001` e `I-002` están implementados y validados funcionalmente en navegador. Los ajustes de presentación detectados se mantienen para la revisión final. `I-003`, centrado en revisión filtrable y exportación de resultados, está propuesto y pendiente de confirmar. El entorno de desarrollo canónico es WSL 2 y el procesamiento continúa siendo íntegramente local.
+`I-001` e `I-002` están implementados y validados funcionalmente en navegador. `I-003`, centrado en revisión filtrable y exportación de resultados, está implementado y verificado mediante pruebas automatizadas; su revisión visual se realizará junto con el pulido final. El entorno de desarrollo canónico es WSL 2 y el procesamiento continúa siendo íntegramente local.
 
 ## Documentación de referencia
 
@@ -24,7 +24,8 @@ AbsenceLens es una aplicación web local-first que importa un único archivo Exc
 - [Verificación del incremento I-001](docs/12-verificacion-i001.md)
 - [Propuesta del segundo incremento vertical](docs/13-segundo-incremento-vertical.md)
 - [Verificación del incremento I-002](docs/14-verificacion-i002.md)
-- [Propuesta del tercer incremento vertical](docs/15-tercer-incremento-vertical.md)
+- [Tercer incremento vertical](docs/15-tercer-incremento-vertical.md)
+- [Verificación del incremento I-003](docs/16-verificacion-i003.md)
 - [ADR-0001: lector XLSX en navegador](docs/adr/0001-lector-xlsx.md)
 - [ADR-0002: escritor XLSX en navegador](docs/adr/0002-escritor-xlsx.md)
 

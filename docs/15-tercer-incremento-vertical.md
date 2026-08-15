@@ -2,7 +2,7 @@
 
 ## Estado
 
-Especificación aprobada el 15/08/2026 y preparada para implementar.
+Especificación aprobada e implementación completada el 15/08/2026. La verificación automatizada se recoge en `docs/16-verificacion-i003.md`; la revisión visual queda agrupada con el pulido final.
 
 ## Identificación
 
@@ -86,16 +86,18 @@ Las decisiones están registradas como D-055 a D-058 en `docs/06-decisiones-pend
 - Fixture de rendimiento de 15.000 filas y Web Worker.
 - PWA, persistencia, backend, autenticación y telemetría.
 
-## Diseño técnico preliminar
+## Diseño técnico implementado
 
 - Conservar `ValidatedAbsenceRecord` como modelo neutral de revisión durante la sesión.
-- Crear una proyección de presentación que relacione registros, empleados candidatos y cálculos normalizados mediante `sourceRow`.
-- Implementar filtrado, ordenación y proyección como funciones puras independientes de Angular.
-- Definir un puerto `CandidateReportExporter` que reciba estructuras neutrales.
-- Mantener la librería de escritura `.xlsx` encapsulada en un adaptador y justificarla en un ADR antes de incorporarla.
+- La proyección de revisión relaciona registros, empleados candidatos y cálculos normalizados mediante `sourceRow`.
+- El filtrado, la ordenación y la proyección son funciones puras independientes de Angular.
+- El puerto `CandidateReportExporter` recibe un informe neutral y no conoce la interfaz.
+- `write-excel-file` 4.1.1 permanece encapsulada en un adaptador conforme al ADR-0002.
+- La descarga utiliza un `Blob` y una URL de objeto temporal creada únicamente tras la acción explícita del usuario.
+- Los textos que comienzan por caracteres interpretables como fórmulas se neutralizan antes de escribir el libro.
 - No acoplar las reglas R1/R2 a los filtros de presentación ni a la librería de exportación.
 
-## Pruebas previstas
+## Cobertura automatizada
 
 - Asociación exacta entre candidatos y registros mediante identificador y fila de origen.
 - Filtros de texto, categorías y fechas; combinación y limpieza.
@@ -105,12 +107,12 @@ Las decisiones están registradas como D-055 a D-058 en `docs/06-decisiones-pend
 - Exportación exacta de la vista activa y relectura del libro generado.
 - Exclusión de la duración de origen y conservación de nóminas como texto.
 - Nombre de descarga saneado.
-- Ausencia de red y persistencia durante revisión y exportación.
-- Navegación por teclado, foco visible y estado no dependiente solo del color.
+- Flujo de interfaz que filtra R2 y exporta exactamente los candidatos y registros visibles.
+- Ausencia de red, persistencia y escritura de datos en consola mediante revisión estática.
 
-## Condiciones para comenzar
+## Resultado de entrega
 
-- Confirmar las cuatro decisiones funcionales.
-- Elegir y documentar mediante ADR una librería de escritura compatible con navegador y licencia del proyecto.
-- Definir los resultados exactos de aceptación para una combinación representativa de filtros y para cada hoja exportada.
-- Mantener en verde las regresiones completas de I-001 e I-002.
+- Las cuatro decisiones funcionales quedaron confirmadas como D-055 a D-058.
+- La elección del escritor quedó documentada como D-059 y ADR-0002.
+- Las regresiones de I-001 e I-002 permanecen cubiertas por la suite completa.
+- La revisión manual de presentación, teclado y diseño adaptable se realizará en la fase de pulido final.
