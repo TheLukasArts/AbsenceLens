@@ -43,6 +43,7 @@ Número de días de intersección entre el episodio y el periodo analizado. No c
 
 ## Regla R1: recurrencia de corta duración
 
+- Solo participan episodios de baja laboral; `Vacaciones` queda excluida del cálculo, del listado y del detalle operativo habitual.
 - Un episodio es corto si su duración total efectiva es menor o igual a 30 días.
 - Un empleado es recurrente si acumula al menos 5 episodios cortos en una ventana de 12 meses.
 - Se evalúa únicamente la ventana de 12 meses que termina en la fecha de corte. Sus límites inclusivos son el día posterior a la misma fecha del año anterior y la propia fecha de corte.
@@ -54,9 +55,9 @@ Número de días de intersección entre el episodio y el periodo analizado. No c
   3. identificador de empleado ascendente como criterio técnico estable, salvo que el usuario defina otro.
 - Debe mostrarse la ventana que produjo la coincidencia y los episodios contabilizados.
 
-
 ## Regla R2: larga duración
 
+- Solo participan episodios de baja laboral; `Vacaciones` queda excluida del cálculo, del listado y del detalle operativo habitual.
 - Un episodio es de larga duración si su duración total efectiva es mayor o igual a 180 días.
 - La clasificación utiliza la duración total efectiva, no solo los días visibles dentro del periodo filtrado.
 - Las métricas del periodo utilizan exclusivamente los días que intersectan con él.
@@ -68,9 +69,9 @@ Número de días de intersección entre el episodio y el periodo analizado. No c
 - Si un empleado tiene varios episodios con la misma duración máxima, se utiliza como representativo el de fecha de inicio más reciente.
 - Se debe indicar cuándo un episodio es largo por su duración total aunque solo una parte se contabilice en el periodo visible.
 
-
 ## Regla futura: adyacencia a vacaciones
 
+- Las vacaciones se conservan únicamente como contexto temporal para esta regla futura y no se convierten en ausencias médicas.
 - Agrupar primero días consecutivos de vacaciones.
 - Existe adyacencia anterior si la baja termina el día natural inmediatamente anterior al inicio de vacaciones.
 - Existe adyacencia posterior si la baja comienza el día natural inmediatamente posterior al final de vacaciones.

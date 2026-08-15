@@ -64,7 +64,7 @@ Inventario autorizado para el perfil inicial:
 | Sexo | `F`, `M` |
 | Ubicación - Código | `ABC`, `AGP`, `ALC`, `BCN`, `BIO`, `BJS`, `BJZ`, `EAS`, `GRO`, `GRX`, `IBZ`, `LCG`, `LEI`, `LEN`, `LPA`, `MAD`, `MAH`, `MJV`, `MLN`, `OVD`, `PMI`, `PNA`, `REU`, `RGS`, `RJL`, `SCQ`, `SDR`, `SLM`, `SPC`, `TFN`, `TFS`, `VGO`, `VIT`, `VLL`, `XRY`, `ZAZ` |
 
-`Vacaciones` identifica vacaciones disfrutadas. Los otros tres valores de `Descripción Ausencia` representan episodios de baja laboral y deben conservarse literalmente, sin inferir diagnósticos ni causas adicionales.
+`Vacaciones` identifica vacaciones disfrutadas y solo se conserva para futuros análisis contextuales de adyacencia o coincidencia temporal. No interviene ni aparece como ausencia médica en R1, R2, el detalle operativo habitual o sus exportaciones. Los otros tres valores de `Descripción Ausencia` representan episodios de baja laboral y deben conservarse literalmente, sin inferir diagnósticos ni causas adicionales.
 
 `Plan Salarial - Desc.` y `Ubicación - Código` están confirmadas como cabeceras y no forman parte de sus respectivos inventarios de valores.
 
@@ -80,7 +80,7 @@ Inventario autorizado para el perfil inicial:
 - Convertir fechas Excel o texto a fecha de calendario sin hora.
 - Tratar inicio y fin como inclusivos.
 - Reconocer `31/12/2999` como final abierto.
-- Mantener las filas originales para detalle y exportación, salvo el valor de duración de origen expresamente descartado.
+- Mantener las filas originales de baja laboral para detalle y exportación, salvo el valor de duración de origen expresamente descartado; conservar las vacaciones separadamente y solo para las comparaciones temporales futuras.
 - Construir entidades normalizadas independientes para el motor de reglas.
 - Agrupar filas consecutivas de vacaciones por empleado.
 - No confiar en la columna de duración del origen.

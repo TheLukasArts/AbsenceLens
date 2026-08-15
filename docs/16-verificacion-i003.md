@@ -2,7 +2,9 @@
 
 ## Estado
 
-La implementación funcional y la verificación automatizada de `I-003` quedaron completadas el 15/08/2026. La revisión visual en navegador se conserva para la fase final, junto con los ajustes de presentación ya diferidos.
+La implementación y la verificación automatizada iniciales de `I-003` quedaron completadas el 15/08/2026. La revisión manual posterior detectó que el detalle operativo y la hoja `Registros` incluían vacaciones de los empleados candidatos.
+
+R1 y R2 ya excluyen correctamente esas filas de sus cálculos y candidaturas, pero `I-003` permanece pendiente de corrección porque las vacaciones tampoco deben aparecer en la revisión ni en las exportaciones habituales. El rediseño se define en `docs/17-correccion-redisenio-revision-exportacion.md`.
 
 ## Comprobaciones realizadas
 
