@@ -14,12 +14,25 @@ const records: ValidatedAbsenceRecord[] = [
   record(2, '000002', 'MAD', 'PAX', 'Fijo', localDate(2026, 2, 1), localDate(2026, 2, 3)),
   record(3, '000001', 'BCN', 'RAM', 'Temporal', localDate(2026, 1, 1), localDate(2026, 8, 1)),
   record(4, '000003', 'AGP', 'PAX', 'Fijo', localDate(2026, 3, 1), localDate(2026, 3, 2)),
+  {
+    ...record(
+      5,
+      '000001',
+      'BCN',
+      'RAM',
+      'Temporal',
+      localDate(2026, 1, 15),
+      localDate(2026, 1, 15),
+    ),
+    description: 'Vacaciones',
+  },
 ];
 
 const episodes: AbsenceEpisode[] = [
   episode(records[0]),
   episode(records[1], localDate(2026, 7, 31), ['END_AFTER_CUTOFF']),
   episode(records[2]),
+  episode(records[3]),
 ];
 
 describe('review projection', () => {
@@ -34,6 +47,13 @@ describe('review projection', () => {
       status: 'Recortado al corte',
     });
     expect(reviewValue(rows[1], 'effectiveEnd')).toBe('31/07/2026');
+  });
+
+  it('excluye vacaciones del detalle operativo aunque pertenezcan a un candidato', () => {
+    const rows = buildReviewRows(records, episodes);
+
+    expect(rows).toHaveLength(3);
+    expect(rows.every((row) => row.description !== 'Vacaciones')).toBe(true);
   });
 
   it('selecciona únicamente registros de los empleados visibles', () => {

@@ -11,8 +11,8 @@ export class WriteExcelFileReportExporter extends CandidateReportExporter {
     return writeExcelFile(
       report.sheets.map((sheet) => ({
         sheet: sheet.name,
-        data: styledSheet(sheet.rows),
-        stickyRowsCount: 1,
+        data: styledSheet(sheet.rows, new Set(sheet.headerRows ?? [0])),
+        stickyRowsCount: sheet.stickyRowsCount ?? 0,
         columns: columnWidths(sheet.rows),
       })),
       { fontFamily: 'Aptos', fontSize: 10 },
@@ -20,10 +20,13 @@ export class WriteExcelFileReportExporter extends CandidateReportExporter {
   }
 }
 
-function styledSheet(rows: readonly (readonly ReportCell[])[]): SheetData {
+function styledSheet(
+  rows: readonly (readonly ReportCell[])[],
+  headerRows: ReadonlySet<number>,
+): SheetData {
   return rows.map((row, rowIndex) =>
     row.map((value): Cell => {
-      if (rowIndex === 0) {
+      if (headerRows.has(rowIndex)) {
         return {
           value: value ?? '',
           fontWeight: 'bold',

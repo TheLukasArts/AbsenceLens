@@ -767,7 +767,127 @@ table {
   span {
     display: block;
   }
+}
+.results-heading .primary {
+  color: var(--deep);
+  background: white;
 
+  &:not(:disabled):hover {
+    background: var(--ice);
+  }
+}
+
+.row-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.review-master-detail {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: minmax(190px, 260px) 1fr;
+  min-height: 230px;
+  overflow: hidden;
+  border: 1px solid #c8dadd;
+  border-radius: 12px;
+}
+
+.review-master {
+  padding: 18px;
+  background: var(--ice);
+  border-right: 1px solid #c8dadd;
+
+  h4,
+  p {
+    margin: 0;
+  }
+
+  h4 {
+    color: var(--deep);
+  }
+
+  p {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+}
+
+.candidate-list {
+  max-height: 300px;
+  margin-top: 14px;
+  display: grid;
+  gap: 6px;
+  overflow-y: auto;
+
+  button {
+    min-height: 38px;
+    padding: 8px 10px;
+    color: var(--deep);
+    background: white;
+    border: 1px solid transparent;
+    text-align: left;
+
+    &.active {
+      background: #d7f2f4;
+      border-color: var(--aqua);
+    }
+  }
+}
+
+.review-detail {
+  padding: 20px;
+  background: white;
+}
+
+.review-detail-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+
+  span,
+  p {
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  h4,
+  p {
+    margin: 4px 0 0;
+  }
+
+  h4 {
+    color: var(--deep);
+    font-size: 1.25rem;
+  }
+}
+
+.review-summary {
+  margin: 18px 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+
+  div {
+    padding: 12px;
+    background: #f7fafb;
+    border-left: 4px solid var(--aqua);
+  }
+
+  dt {
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  dd {
+    margin: 4px 0 0;
+    color: var(--deep);
+    font-weight: 800;
+  }
+}
+
+.review-counts {
   strong {
     font-size: 1.45rem;
   }
@@ -871,6 +991,20 @@ table {
   }
   .review-controls {
     grid-template-columns: 1fr;
+  }
+  .review-master-detail {
+    grid-template-columns: 1fr;
+  }
+  .review-master {
+    border-right: 0;
+    border-bottom: 1px solid #c8dadd;
+  }
+  .candidate-list {
+    max-height: 150px;
+  }
+  .review-detail-heading {
+    align-items: stretch;
+    flex-direction: column;
   }
   .review-heading,
   .review-actions {

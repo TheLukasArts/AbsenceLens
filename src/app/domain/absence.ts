@@ -25,5 +25,9 @@ export interface AbsenceEpisode {
 }
 
 export function isSicknessEpisode(episode: AbsenceEpisode): boolean {
-  return episode.description !== 'Vacaciones';
+  return isSicknessDescription(episode.description);
+}
+
+export function isSicknessDescription(description: AbsenceDescription): boolean {
+  return description !== 'Vacaciones';
 }

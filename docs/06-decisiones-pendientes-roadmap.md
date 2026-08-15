@@ -69,6 +69,7 @@
 | D-063 | Ninguna exportación global puede truncar o limitar arbitrariamente el conjunto visible de candidatos; la usabilidad no se resolverá sesgando información. |
 | D-064 | Las vacaciones y los festivos se usarán para detectar adyacencia inmediata anterior o posterior, no solapamiento literal. La mención a solapamientos fue una imprecisión terminológica. |
 | D-065 | La ficha individual será accesible y exportable directamente desde cada fila candidata y desde la sección `Revisión`, sin obligar a recorrer el detalle global. |
+| D-066 | La exportación global contiene el conjunto completo visible en `Resumen + Candidatos`, sin `Registros`; cada candidato ofrece una exportación individual `Ficha` desde su fila y desde `Revisión`. |
 
 ## Preguntas abiertas
 
@@ -82,7 +83,6 @@ Estas preguntas no bloquean el primer incremento vertical si las capacidades aso
 | P-010 | ¿La sección equivalente a “limitaciones” debe formar parte de AbsenceLens? No existe una columna ni una regla asociada en el alcance actual. | Usuario interesado |
 | P-011 | Para cubrir el dashboard de tasa, ¿se proporcionará una fuente autorizada de horas netas/trabajadas y la fórmula, o se sustituirá por métricas derivables del Excel de ausencias? | Usuario interesado |
 | P-012 | ¿Cuáles son los valores exactos de la paleta de marca, preferiblemente en hexadecimal, y sus usos previstos? | Usuario interesado |
-| P-013 | ¿Se confirma sustituir la hoja global `Registros` por una exportación completa `Resumen + Candidatos` y una exportación individual `Ficha` disponible directamente en cada fila y ficha de empleado? | Usuario interesado |
 
 ## Preguntas para gráficos
 

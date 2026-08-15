@@ -15,7 +15,12 @@ import {
   validateAbsenceWorkbook,
 } from './application/import-profile';
 import { normalizeAbsenceRecords } from './application/normalize';
-import { CandidateTable, buildCandidateReport } from './application/report';
+import {
+  CandidateEpisodeReportRow,
+  CandidateTable,
+  buildCandidateDetailReport,
+  buildCandidateListReport,
+} from './application/report';
 import {
   REVIEW_COLUMNS,
   ReviewColumn,
@@ -53,6 +58,7 @@ import { WriteExcelFileReportExporter } from './infrastructure/write-excel-file-
 
 type Phase = 'idle' | 'reading' | 'validating' | 'ready' | 'analyzing' | 'results' | 'error';
 type ResultView = 'r1' | 'r2';
+type ResultSection = ResultView | 'review';
 
 interface AnalysisWarning {
   readonly row: number;
@@ -97,6 +103,8 @@ export class App {
   protected readonly selectedLongCandidate = signal<LongDurationCandidate | null>(null);
   protected readonly selectedCentres = signal<readonly string[]>([]);
   protected readonly resultView = signal<ResultView>('r1');
+  protected readonly resultSection = signal<ResultSection>('r1');
+  protected readonly selectedReviewEmployeeId = signal<string | null>(null);
   protected readonly cutoffIso = signal(formatIsoDate(lastCompleteMonthCutoff(this.clock.today())));
   protected readonly busy = computed(
     () => ['reading', 'validating', 'analyzing'].includes(this.phase()) || this.exportBusy(),
@@ -141,6 +149,47 @@ export class App {
   );
   protected readonly visibleLongCandidates = computed(() =>
     this.longTop().filter((candidate) => this.filteredEmployeeIds().has(candidate.employeeId)),
+  );
+  protected readonly reviewCandidateIds = computed(() =>
+    (this.resultView() === 'r1' ? this.visibleCandidates() : this.visibleLongCandidates()).map(
+      (candidate) => candidate.employeeId,
+    ),
+  );
+  protected readonly activeReviewEmployeeId = computed(() => {
+    const ids = this.reviewCandidateIds();
+    const selected = this.selectedReviewEmployeeId();
+    return selected && ids.includes(selected) ? selected : (ids[0] ?? null);
+  });
+  protected readonly activeReviewRows = computed(() => {
+    const employeeId = this.activeReviewEmployeeId();
+    if (!employeeId) return [];
+    const sourceRows =
+      this.resultView() === 'r1'
+        ? new Set(
+            this.candidates()
+              .find((candidate) => candidate.employeeId === employeeId)
+              ?.explanation.episodes.map((item) => item.episode.sourceRow) ?? [],
+          )
+        : new Set(
+            this.longCandidates()
+              .find((candidate) => candidate.employeeId === employeeId)
+              ?.explanation.episodes.map((item) => item.episode.sourceRow) ?? [],
+          );
+    return this.reviewRows().filter((row) => sourceRows.has(row.sourceRow));
+  });
+  protected readonly activeR1ReviewCandidate = computed(() =>
+    this.resultView() === 'r1'
+      ? this.candidates().find(
+          (candidate) => candidate.employeeId === this.activeReviewEmployeeId(),
+        )
+      : undefined,
+  );
+  protected readonly activeR2ReviewCandidate = computed(() =>
+    this.resultView() === 'r2'
+      ? this.longCandidates().find(
+          (candidate) => candidate.employeeId === this.activeReviewEmployeeId(),
+        )
+      : undefined,
   );
   protected readonly hasReviewFilters = computed(
     () =>
@@ -234,6 +283,23 @@ export class App {
 
   protected selectResultView(view: ResultView): void {
     this.resultView.set(view);
+    this.resultSection.set(view);
+    this.selectedReviewEmployeeId.set(null);
+  }
+
+  protected openCandidateReview(employeeId: string, view: ResultView): void {
+    this.resultView.set(view);
+    this.resultSection.set('review');
+    this.selectedReviewEmployeeId.set(employeeId);
+  }
+
+  protected openReviewSection(): void {
+    this.resultSection.set('review');
+    this.selectedReviewEmployeeId.set(this.activeReviewEmployeeId());
+  }
+
+  protected selectReviewEmployee(employeeId: string): void {
+    this.selectedReviewEmployeeId.set(employeeId);
   }
 
   protected toggleCentre(centre: string, event: Event): void {
@@ -304,28 +370,47 @@ export class App {
 
   protected async exportCurrentView(): Promise<void> {
     const cutoff = parseIsoDate(this.cutoffIso());
-    if (!cutoff || this.filteredReviewRows().length === 0) return;
+    if (!cutoff || this.resultCount() === 0) return;
 
     this.exportBusy.set(true);
     this.exportError.set('');
     try {
-      const report = buildCandidateReport({
+      const report = buildCandidateListReport({
         view: this.resultView(),
         cutoff,
         filters: this.reviewFilters(),
         startFrom: parseIsoDate(this.reviewStartFromIso()),
         startTo: parseIsoDate(this.reviewStartToIso()),
         candidateTable: this.currentCandidateTable(),
-        records: this.filteredReviewRows(),
         warningCount: this.analysisWarnings().length,
       });
       const blob = await this.reportExporter.create(report);
       this.browserDownload.save(blob, report.fileName);
       this.statusMessage.set(
-        `Exportación preparada: ${report.sheets.length} hojas y ${this.filteredReviewRows().length} registros.`,
+        `Listado exportado: ${this.resultCount()} candidatos en ${report.sheets.length} hojas.`,
       );
     } catch {
       this.exportError.set('No se pudo generar el Excel. Los datos permanecen en esta sesión.');
+    } finally {
+      this.exportBusy.set(false);
+    }
+  }
+
+  protected async exportCandidate(employeeId: string, view: ResultView): Promise<void> {
+    const cutoff = parseIsoDate(this.cutoffIso());
+    if (!cutoff) return;
+    const reportInput = this.candidateDetailInput(employeeId, view);
+    if (!reportInput) return;
+
+    this.exportBusy.set(true);
+    this.exportError.set('');
+    try {
+      const report = buildCandidateDetailReport({ view, cutoff, employeeId, ...reportInput });
+      const blob = await this.reportExporter.create(report);
+      this.browserDownload.save(blob, report.fileName);
+      this.statusMessage.set('Ficha individual preparada con los episodios médicos pertinentes.');
+    } catch {
+      this.exportError.set('No se pudo generar la ficha. Los datos permanecen en esta sesión.');
     } finally {
       this.exportBusy.set(false);
     }
@@ -491,6 +576,57 @@ export class App {
     };
   }
 
+  private candidateDetailInput(
+    employeeId: string,
+    view: ResultView,
+  ): {
+    details: readonly (readonly [string, string | number])[];
+    episodes: readonly CandidateEpisodeReportRow[];
+  } | null {
+    if (view === 'r1') {
+      const candidate = this.candidates().find((item) => item.employeeId === employeeId);
+      if (!candidate) return null;
+      const outcomes = new Map(
+        candidate.explanation.episodes.map((item) => [
+          item.episode.sourceRow,
+          this.reasonLabel(item.reason),
+        ]),
+      );
+      return {
+        details: [
+          ['Episodios contabilizados', candidate.episodeCount],
+          ['Inicio más reciente', formatSpanishDate(candidate.mostRecentStart)],
+          [
+            'Ventana evaluada',
+            `${formatSpanishDate(candidate.window.start)}–${formatSpanishDate(candidate.window.end)}`,
+          ],
+        ],
+        episodes: this.reviewRows()
+          .filter((row) => outcomes.has(row.sourceRow))
+          .map((review) => ({ review, outcome: outcomes.get(review.sourceRow)! })),
+      };
+    }
+
+    const candidate = this.longCandidates().find((item) => item.employeeId === employeeId);
+    if (!candidate) return null;
+    const outcomes = new Map(
+      candidate.explanation.episodes.map((item) => [
+        item.episode.sourceRow,
+        item.representative ? 'Episodio representativo' : 'Otro episodio largo',
+      ]),
+    );
+    return {
+      details: [
+        ['Duración máxima', candidate.maximumDuration],
+        ['Episodios largos', candidate.longEpisodeCount],
+        ['Centro representativo', candidate.representativeEpisode.workCentre],
+      ],
+      episodes: this.reviewRows()
+        .filter((row) => outcomes.has(row.sourceRow))
+        .map((review) => ({ review, outcome: outcomes.get(review.sourceRow)! })),
+    };
+  }
+
   private resetResults(): void {
     this.candidates.set([]);
     this.longCandidates.set([]);
@@ -499,6 +635,8 @@ export class App {
     this.selectedLongCandidate.set(null);
     this.selectedCentres.set([]);
     this.resultView.set('r1');
+    this.resultSection.set('r1');
+    this.selectedReviewEmployeeId.set(null);
     this.reviewRows.set([]);
     this.reviewFilters.set([]);
     this.reviewFilterValue.set('');

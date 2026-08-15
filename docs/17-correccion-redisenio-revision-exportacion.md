@@ -2,7 +2,7 @@
 
 ## Estado
 
-Propuesta funcional del 15/08/2026. La exclusión de vacaciones, la adyacencia temporal y la estructura de navegación están confirmadas. Queda pendiente confirmar únicamente el modelo revisado de exportación antes de implementar.
+Especificación confirmada e implementada el 15/08/2026. La exclusión de vacaciones, la adyacencia temporal, la estructura de navegación y el modelo revisado de exportación están cerrados y cubiertos por pruebas automatizadas.
 
 ## Hallazgo funcional
 
@@ -116,6 +116,6 @@ La mejora completa de semántica, controles y combinaciones avanzadas permanece 
 7. Los identificadores conservan sus ceros a la izquierda.
 8. Todo el procesamiento y la generación del libro permanecen en el navegador y en memoria.
 
-## Decisiones pendientes antes de implementar
+## Decisiones confirmadas
 
-- Confirmar las dos modalidades: listado global completo con `Resumen + Candidatos` y ficha individual exportable desde cada fila o desde `Revisión`.
+- Las decisiones están registradas como D-060 a D-066 en `docs/06-decisiones-pendientes-roadmap.md`.

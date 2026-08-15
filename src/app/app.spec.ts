@@ -88,12 +88,14 @@ describe('App', () => {
     expect(readWorkbook).toHaveBeenCalledOnce();
   });
 
-  it('filtra la revisión y exporta únicamente la vista activa', async () => {
+  it('filtra la revisión y exporta el listado global completo de la vista activa', async () => {
     const root = await importWorkbook(buildWorkbookWithLongDurations());
     setCutoff(root);
     findButton(root, 'Ejecutar análisis').click();
     detectChanges();
     findButton(root, 'Larga duración').click();
+    detectChanges();
+    findButton(root, 'Revisión').click();
     detectChanges();
 
     const column = root.querySelector<HTMLSelectElement>('[data-testid="review-filter-column"]')!;
@@ -108,7 +110,7 @@ describe('App', () => {
 
     expect(root.textContent).not.toContain('000010');
     expect(root.textContent).toContain('Ubicación - Código: BCN');
-    expect(root.textContent).toContain('empleados · 2 registros');
+    expect(root.textContent).toContain('empleados · 1 episodios médicos');
 
     root.querySelector<HTMLButtonElement>('[data-testid="export-report"]')!.click();
     await activeFixture.whenStable();
@@ -116,14 +118,30 @@ describe('App', () => {
 
     expect(createReport).toHaveBeenCalledOnce();
     const report = createReport.mock.calls[0][0] as CandidateReport;
-    expect(report.sheets.map((sheet) => sheet.name)).toEqual([
-      'Resumen',
-      'Candidatos',
-      'Registros',
-    ]);
+    expect(report.sheets.map((sheet) => sheet.name)).toEqual(['Resumen', 'Candidatos']);
     expect(report.sheets[1].rows).toHaveLength(3);
-    expect(report.sheets[2].rows).toHaveLength(3);
     expect(saveDownload).toHaveBeenCalledWith(expect.any(Blob), report.fileName);
+  });
+
+  it('abre y exporta una ficha individual sin convertir vacaciones en ausencia médica', async () => {
+    const root = await importWorkbook(buildWorkbookWithVacation());
+    setCutoff(root);
+    findButton(root, 'Ejecutar análisis').click();
+    detectChanges();
+
+    findButton(root, 'Abrir ficha').click();
+    detectChanges();
+    expect(root.textContent).toContain('Ficha de candidato');
+    expect(root.textContent).toContain('5 episodios médicos pertinentes');
+    expect(root.textContent).not.toContain('Vacaciones');
+
+    findButton(root, 'Exportar ficha').click();
+    await activeFixture.whenStable();
+    detectChanges();
+
+    const report = createReport.mock.calls[0][0] as CandidateReport;
+    expect(report.sheets.map((sheet) => sheet.name)).toEqual(['Ficha']);
+    expect(report.sheets[0].rows.flat()).not.toContain('Vacaciones');
   });
 });
 
@@ -174,6 +192,12 @@ function setCutoff(root: HTMLElement): void {
 function buildWorkbook(): WorkbookData {
   return workbook(shortRows());
 }
+function buildWorkbookWithVacation(): WorkbookData {
+  return workbook([
+    ...shortRows(),
+    absenceRow('000001', '15/06/2026', '30/06/2026', 'MAD', 'Vacaciones'),
+  ]);
+}
 
 function shortRows(): WorkbookCell[][] {
   return [1, 2, 3, 4, 5].map((month) =>
@@ -195,6 +219,7 @@ function absenceRow(
   start: string,
   end: string,
   centre: string,
+  description = 'Enfermedad con Baja en la S.S',
 ): WorkbookCell[] {
   return [
     employeeId,
@@ -202,7 +227,7 @@ function absenceRow(
     'RG-14',
     start,
     end,
-    'Enfermedad con Baja en la S.S',
+    description,
     'RAM',
     '15/07/1970',
     'FD',

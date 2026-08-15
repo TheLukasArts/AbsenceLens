@@ -152,16 +152,25 @@
           <h2 id="results-title">Candidatos para revisión humana</h2>
         </div>
         <span class="result-count" aria-label="Resultados visibles">{{ resultCount() }}</span>
+        <button
+          class="primary"
+          data-testid="export-report"
+          type="button"
+          [disabled]="resultCount() === 0 || exportBusy()"
+          (click)="exportCurrentView()"
+        >
+          {{ exportBusy() ? 'Preparando…' : 'Exportar listado' }}
+        </button>
       </div>
 
       <div class="result-tabs" role="tablist" aria-label="Listados de análisis">
         <button
           id="tab-r1"
           class="tab-button"
-          [class.active]="resultView() === 'r1'"
+          [class.active]="resultSection() === 'r1'"
           type="button"
           role="tab"
-          [attr.aria-selected]="resultView() === 'r1'"
+          [attr.aria-selected]="resultSection() === 'r1'"
           aria-controls="panel-r1"
           (click)="selectResultView('r1')"
         >
@@ -170,14 +179,26 @@
         <button
           id="tab-r2"
           class="tab-button"
-          [class.active]="resultView() === 'r2'"
+          [class.active]="resultSection() === 'r2'"
           type="button"
           role="tab"
-          [attr.aria-selected]="resultView() === 'r2'"
+          [attr.aria-selected]="resultSection() === 'r2'"
           aria-controls="panel-r2"
           (click)="selectResultView('r2')"
         >
           Larga duración <span>{{ longCandidates().length }}</span>
+        </button>
+        <button
+          id="tab-review"
+          class="tab-button"
+          [class.active]="resultSection() === 'review'"
+          type="button"
+          role="tab"
+          [attr.aria-selected]="resultSection() === 'review'"
+          aria-controls="panel-review"
+          (click)="openReviewSection()"
+        >
+          Revisión <span>{{ resultCount() }}</span>
         </button>
       </div>
 
@@ -195,7 +216,7 @@
           </ul>
         </details>
       }
-      @if (resultView() === 'r1') {
+      @if (resultSection() === 'r1') {
         <div id="panel-r1" role="tabpanel" aria-labelledby="tab-r1">
           @if (visibleCandidates().length === 0) {
             <p class="empty-result">
@@ -237,7 +258,22 @@
                           formatDate(candidate.window.end)
                         }}
                       </td>
-                      <td>
+                      <td class="row-actions">
+                        <button
+                          class="link-button"
+                          type="button"
+                          (click)="openCandidateReview(candidate.employeeId, 'r1')"
+                        >
+                          Abrir ficha
+                        </button>
+                        <button
+                          class="link-button"
+                          type="button"
+                          [disabled]="exportBusy()"
+                          (click)="exportCandidate(candidate.employeeId, 'r1')"
+                        >
+                          Exportar ficha
+                        </button>
                         <button
                           class="link-button"
                           type="button"
@@ -253,7 +289,7 @@
             </div>
           }
         </div>
-      } @else {
+      } @else if (resultSection() === 'r2') {
         <div id="panel-r2" role="tabpanel" aria-labelledby="tab-r2">
           <fieldset class="centre-filter">
             <legend>Filtrar por centro del episodio representativo</legend>
@@ -346,7 +382,22 @@
                           {{ longEpisodeStatus(candidate.representativeEpisode) }}
                         </span>
                       </td>
-                      <td>
+                      <td class="row-actions">
+                        <button
+                          class="link-button"
+                          type="button"
+                          (click)="openCandidateReview(candidate.employeeId, 'r2')"
+                        >
+                          Abrir ficha
+                        </button>
+                        <button
+                          class="link-button"
+                          type="button"
+                          [disabled]="exportBusy()"
+                          (click)="exportCandidate(candidate.employeeId, 'r2')"
+                        >
+                          Exportar ficha
+                        </button>
                         <button
                           class="link-button"
                           type="button"
@@ -364,154 +415,226 @@
         </div>
       }
 
-      <section class="review" aria-labelledby="review-title">
-        <div class="review-heading">
-          <div>
-            <p class="eyebrow">Detalle operativo</p>
-            <h3 id="review-title">Revisar registros y preparar informe</h3>
-            <p>Los filtros acotan la revisión visible; las reglas R1 y R2 no se recalculan.</p>
+      @if (resultSection() === 'review') {
+        <section class="review" aria-labelledby="review-title">
+          <div class="review-heading">
+            <div>
+              <p class="eyebrow">Detalle operativo</p>
+              <h3 id="review-title">Revisar registros y preparar informe</h3>
+              <p>Los filtros acotan la revisión visible; las reglas R1 y R2 no se recalculan.</p>
+            </div>
+            <div class="review-counts" aria-live="polite">
+              <strong>{{ resultCount() }}</strong>
+              <span>empleados · {{ activeReviewRows().length }} episodios médicos</span>
+            </div>
           </div>
-          <div class="review-counts" aria-live="polite">
-            <strong>{{ resultCount() }}</strong>
-            <span>empleados · {{ filteredReviewRows().length }} registros</span>
-          </div>
-        </div>
-
-        <div class="review-controls">
-          <div class="filter-builder">
-            <label>
-              <span>Columna</span>
-              <select
-                data-testid="review-filter-column"
-                [ngModel]="reviewFilterColumn()"
-                (ngModelChange)="setReviewFilterColumn($event)"
-              >
-                @for (column of reviewColumns; track column.key) {
-                  <option [value]="column.key">{{ column.label }}</option>
+          <div
+            class="review-master-detail"
+            id="panel-review"
+            role="tabpanel"
+            aria-labelledby="tab-review"
+          >
+            <aside class="review-master" aria-label="Candidatos disponibles">
+              <h4>Candidatos</h4>
+              <p>Selecciona una nómina para consultar su ficha.</p>
+              <div class="candidate-list">
+                @for (employeeId of reviewCandidateIds(); track employeeId) {
+                  <button
+                    type="button"
+                    [class.active]="activeReviewEmployeeId() === employeeId"
+                    (click)="selectReviewEmployee(employeeId)"
+                  >
+                    <code>{{ employeeId }}</code>
+                  </button>
                 }
-              </select>
-            </label>
-            <label>
-              <span>Contiene</span>
-              <input
-                data-testid="review-filter-value"
-                type="text"
-                [ngModel]="reviewFilterValue()"
-                (ngModelChange)="reviewFilterValue.set($event)"
-                (keydown.enter)="addReviewFilter()"
-              />
-            </label>
-            <button
-              class="secondary"
-              type="button"
-              [disabled]="!reviewFilterValue().trim()"
-              (click)="addReviewFilter()"
-            >
-              Añadir filtro
-            </button>
-          </div>
-
-          <div class="date-filter">
-            <label>
-              <span>Inicio desde</span>
-              <input
-                type="date"
-                [ngModel]="reviewStartFromIso()"
-                (ngModelChange)="reviewStartFromIso.set($event)"
-              />
-            </label>
-            <label>
-              <span>Inicio hasta</span>
-              <input
-                type="date"
-                [ngModel]="reviewStartToIso()"
-                (ngModelChange)="reviewStartToIso.set($event)"
-              />
-            </label>
-          </div>
-
-          <div class="sort-controls">
-            <label>
-              <span>Ordenar por</span>
-              <select [ngModel]="reviewSortColumn()" (ngModelChange)="setReviewSortColumn($event)">
-                @for (column of reviewColumns; track column.key) {
-                  <option [value]="column.key">{{ column.label }}</option>
+              </div>
+            </aside>
+            <article class="review-detail">
+              @if (activeReviewEmployeeId(); as employeeId) {
+                <div class="review-detail-heading">
+                  <div>
+                    <span>Ficha de candidato</span>
+                    <h4>
+                      <code>{{ employeeId }}</code>
+                    </h4>
+                    <p>
+                      {{
+                        resultView() === 'r1'
+                          ? 'Recurrencia corta · R1-v1'
+                          : 'Larga duración · R2-v1'
+                      }}
+                      · {{ activeReviewRows().length }} episodios médicos pertinentes
+                    </p>
+                  </div>
+                  <button
+                    class="primary"
+                    type="button"
+                    [disabled]="exportBusy()"
+                    (click)="exportCandidate(employeeId, resultView())"
+                  >
+                    Exportar ficha
+                  </button>
+                </div>
+                @if (activeR1ReviewCandidate(); as candidate) {
+                  <dl class="review-summary">
+                    <div>
+                      <dt>Episodios contabilizados</dt>
+                      <dd>{{ candidate.episodeCount }}</dd>
+                    </div>
+                    <div>
+                      <dt>Inicio más reciente</dt>
+                      <dd>{{ formatDate(candidate.mostRecentStart) }}</dd>
+                    </div>
+                  </dl>
                 }
-              </select>
-            </label>
-            <label>
-              <span>Dirección</span>
-              <select
-                [ngModel]="reviewSortDirection()"
-                (ngModelChange)="setReviewSortDirection($event)"
-              >
-                <option value="asc">Ascendente</option>
-                <option value="desc">Descendente</option>
-              </select>
-            </label>
+                @if (activeR2ReviewCandidate(); as candidate) {
+                  <dl class="review-summary">
+                    <div>
+                      <dt>Duración máxima</dt>
+                      <dd>{{ candidate.maximumDuration }} días</dd>
+                    </div>
+                    <div>
+                      <dt>Centro representativo</dt>
+                      <dd>{{ candidate.representativeEpisode.workCentre }}</dd>
+                    </div>
+                  </dl>
+                }
+              } @else {
+                <p class="empty-result">No hay candidatos visibles para revisar.</p>
+              }
+            </article>
           </div>
-        </div>
 
-        <div class="review-actions">
-          <div class="filter-chips" aria-label="Filtros activos">
-            @for (filter of reviewFilters(); track filter.column) {
-              <button type="button" (click)="removeReviewFilter(filter.column)">
-                {{ reviewFilterLabel(filter) }} <span aria-hidden="true">×</span>
+          <div class="review-controls">
+            <div class="filter-builder">
+              <label>
+                <span>Columna</span>
+                <select
+                  data-testid="review-filter-column"
+                  [ngModel]="reviewFilterColumn()"
+                  (ngModelChange)="setReviewFilterColumn($event)"
+                >
+                  @for (column of reviewColumns; track column.key) {
+                    <option [value]="column.key">{{ column.label }}</option>
+                  }
+                </select>
+              </label>
+              <label>
+                <span>Contiene</span>
+                <input
+                  data-testid="review-filter-value"
+                  type="text"
+                  [ngModel]="reviewFilterValue()"
+                  (ngModelChange)="reviewFilterValue.set($event)"
+                  (keydown.enter)="addReviewFilter()"
+                />
+              </label>
+              <button
+                class="secondary"
+                type="button"
+                [disabled]="!reviewFilterValue().trim()"
+                (click)="addReviewFilter()"
+              >
+                Añadir filtro
               </button>
-            }
-            @if (!hasReviewFilters()) {
-              <span>Sin filtros adicionales</span>
-            }
-          </div>
-          <div>
-            <button
-              class="secondary"
-              type="button"
-              [disabled]="!hasReviewFilters()"
-              (click)="clearReviewFilters()"
-            >
-              Limpiar filtros
-            </button>
-            <button
-              class="primary"
-              data-testid="export-report"
-              type="button"
-              [disabled]="filteredReviewRows().length === 0 || exportBusy()"
-              (click)="exportCurrentView()"
-            >
-              {{ exportBusy() ? 'Preparando…' : 'Exportar informe XLSX' }}
-            </button>
-          </div>
-        </div>
+            </div>
 
-        @if (exportError()) {
-          <p class="export-error" role="alert">{{ exportError() }}</p>
-        }
+            <div class="date-filter">
+              <label>
+                <span>Inicio desde</span>
+                <input
+                  type="date"
+                  [ngModel]="reviewStartFromIso()"
+                  (ngModelChange)="reviewStartFromIso.set($event)"
+                />
+              </label>
+              <label>
+                <span>Inicio hasta</span>
+                <input
+                  type="date"
+                  [ngModel]="reviewStartToIso()"
+                  (ngModelChange)="reviewStartToIso.set($event)"
+                />
+              </label>
+            </div>
 
-        <div class="table-wrap review-table">
-          <table>
-            <caption class="sr-only">
-              Registros de ausencia visibles para la revisión actual
-            </caption>
-            <thead>
-              <tr>
-                @for (column of reviewColumns; track column.key) {
-                  <th scope="col">{{ column.label }}</th>
-                }
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of filteredReviewRows(); track row.sourceRow) {
+            <div class="sort-controls">
+              <label>
+                <span>Ordenar por</span>
+                <select
+                  [ngModel]="reviewSortColumn()"
+                  (ngModelChange)="setReviewSortColumn($event)"
+                >
+                  @for (column of reviewColumns; track column.key) {
+                    <option [value]="column.key">{{ column.label }}</option>
+                  }
+                </select>
+              </label>
+              <label>
+                <span>Dirección</span>
+                <select
+                  [ngModel]="reviewSortDirection()"
+                  (ngModelChange)="setReviewSortDirection($event)"
+                >
+                  <option value="asc">Ascendente</option>
+                  <option value="desc">Descendente</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="review-actions">
+            <div class="filter-chips" aria-label="Filtros activos">
+              @for (filter of reviewFilters(); track filter.column) {
+                <button type="button" (click)="removeReviewFilter(filter.column)">
+                  {{ reviewFilterLabel(filter) }} <span aria-hidden="true">×</span>
+                </button>
+              }
+              @if (!hasReviewFilters()) {
+                <span>Sin filtros adicionales</span>
+              }
+            </div>
+            <div>
+              <button
+                class="secondary"
+                type="button"
+                [disabled]="!hasReviewFilters()"
+                (click)="clearReviewFilters()"
+              >
+                Limpiar filtros
+              </button>
+            </div>
+          </div>
+
+          @if (exportError()) {
+            <p class="export-error" role="alert">{{ exportError() }}</p>
+          }
+
+          <div class="table-wrap review-table">
+            <table>
+              <caption class="sr-only">
+                Registros de ausencia visibles para la revisión actual
+              </caption>
+              <thead>
                 <tr>
                   @for (column of reviewColumns; track column.key) {
-                    <td>{{ reviewCell(row, column.key) }}</td>
+                    <th scope="col">{{ column.label }}</th>
                   }
                 </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                @for (row of activeReviewRows(); track row.sourceRow) {
+                  <tr>
+                    @for (column of reviewColumns; track column.key) {
+                      <td>{{ reviewCell(row, column.key) }}</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
     </section>
   }
 </main>

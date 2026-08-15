@@ -1,6 +1,6 @@
 import { ValidatedAbsenceRecord } from './import-profile';
 import { WorkbookCell } from './workbook';
-import { AbsenceEpisode } from '../domain/absence';
+import { AbsenceDescription, AbsenceEpisode, isSicknessDescription } from '../domain/absence';
 import {
   LocalDate,
   compareLocalDates,
@@ -51,7 +51,7 @@ export interface ReviewRow {
   readonly start: LocalDate;
   readonly originalEnd: LocalDate;
   readonly effectiveEnd: LocalDate | null;
-  readonly description: string;
+  readonly description: AbsenceDescription;
   readonly scope: string;
   readonly birthDate: string;
   readonly employeeType: string;
@@ -71,6 +71,7 @@ export function buildReviewRows(
 
   return records.flatMap((record) => {
     const episode = episodesByRow.get(record.sourceRow);
+    if (!isSicknessDescription(record.description)) return [];
     if (!episode) {
       return [];
     }
