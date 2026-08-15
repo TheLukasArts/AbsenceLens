@@ -2,7 +2,7 @@
 
 ## Estado
 
-Propuesta inicial pendiente de confirmar. No autoriza todavía la implementación.
+Especificación aprobada el 15/08/2026 y preparada para implementar.
 
 ## Identificación
 
@@ -65,14 +65,14 @@ En menos de cuatro minutos, una persona debe poder:
 - Excluir siempre la duración errónea proporcionada por el origen.
 - Utilizar un nombre de descarga neutro que no incluya identificadores ni el nombre del archivo importado.
 
-## Decisiones que deben confirmarse
+## Decisiones confirmadas
 
 1. Los filtros adicionales son de revisión y no recalculan R1/R2.
 2. El listado principal sigue agrupado por empleado y el detalle usa una fila por registro.
 3. La exportación contiene únicamente la vista activa y sus filtros.
 4. El libro exportado contiene `Resumen`, `Candidatos` y `Registros`.
 
-Estas preguntas están registradas como P-013 a P-016 en `docs/06-decisiones-pendientes-roadmap.md`.
+Las decisiones están registradas como D-055 a D-058 en `docs/06-decisiones-pendientes-roadmap.md`.
 
 ## Fuera del incremento
 

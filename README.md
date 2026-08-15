@@ -26,6 +26,7 @@ AbsenceLens es una aplicación web local-first que importa un único archivo Exc
 - [Verificación del incremento I-002](docs/14-verificacion-i002.md)
 - [Propuesta del tercer incremento vertical](docs/15-tercer-incremento-vertical.md)
 - [ADR-0001: lector XLSX en navegador](docs/adr/0001-lector-xlsx.md)
+- [ADR-0002: escritor XLSX en navegador](docs/adr/0002-escritor-xlsx.md)
 
 ## Desarrollo local
 
