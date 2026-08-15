@@ -56,6 +56,7 @@
 | D-050 | R2 mantiene al empleado como unidad principal: primero construye una candidatura global por empleado y después el filtro de centros actúa sobre el centro de su episodio representativo. Las estadísticas futuras por centro tendrán un cálculo agregado independiente. |
 | D-051 | Una única acción de análisis calcula R1 y R2; alternar listados o cambiar el filtro de centros no vuelve a leer ni normalizar el Excel. |
 | D-052 | `I-002` no introduce un periodo visible independiente ni métricas de días dentro de ese periodo; muestra la duración total efectiva a fecha de corte. |
+| D-053 | El repositorio canónico se publica como código abierto en `https://github.com/TheLukasArts/AbsenceLens`; solo puede contener código, documentación y datos completamente sintéticos. La licencia de código abierto se elegirá antes de cerrar el MVP. |
 
 ## Preguntas abiertas
 
