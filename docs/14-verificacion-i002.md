@@ -2,7 +2,7 @@
 
 ## Estado
 
-La implementación funcional y la verificación automatizada de `I-002` quedaron completadas el 15/08/2026. La revisión visual manual en navegador permanece pendiente porque el navegador integrado no pudo iniciarse por un error del entorno aislado de Windows, ajeno a la aplicación.
+La implementación funcional y la verificación automatizada de `I-002` quedaron completadas el 15/08/2026. El usuario confirmó posteriormente en navegador que las funcionalidades principales funcionan. Los ajustes visuales observados se abordarán en la revisión final.
 
 ## Comprobaciones realizadas
 
@@ -24,9 +24,9 @@ La implementación funcional y la verificación automatizada de `I-002` quedaron
 - La interfaz permite analizar una sola vez, alternar R1/R2, filtrar centros, limpiar el filtro y abrir o cerrar la explicación R2.
 - La prueba de interfaz confirma una única lectura del libro durante el análisis combinado.
 
-## Revisión visual manual pendiente
+## Revisión manual
 
-Arrancar la aplicación con `pnpm start` y comprobar:
+La validación funcional principal está completada. Para la revisión final se conservan estas comprobaciones de presentación y accesibilidad:
 
 1. que la alternancia entre recurrencia corta y larga duración es clara;
 2. que los filtros de centro son comprensibles y utilizables con teclado;
@@ -34,5 +34,3 @@ Arrancar la aplicación con `pnpm start` y comprobar:
 4. que el detalle recibe el foco, se cierra con `Escape` y devuelve el foco al control que lo abrió;
 5. que las advertencias y estados se entienden sin depender únicamente del color;
 6. que eliminar la sesión restablece resultados, filtros y explicación.
-
-Esta revisión puede generar ajustes de presentación, pero no bloquea la corrección automatizada de la regla R2.

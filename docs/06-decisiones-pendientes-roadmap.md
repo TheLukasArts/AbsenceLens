@@ -57,6 +57,7 @@
 | D-051 | Una única acción de análisis calcula R1 y R2; alternar listados o cambiar el filtro de centros no vuelve a leer ni normalizar el Excel. |
 | D-052 | `I-002` no introduce un periodo visible independiente ni métricas de días dentro de ese periodo; muestra la duración total efectiva a fecha de corte. |
 | D-053 | El repositorio canónico se publica como código abierto en `https://github.com/TheLukasArts/AbsenceLens`; solo puede contener código, documentación y datos completamente sintéticos. La licencia de código abierto se elegirá antes de cerrar el MVP. |
+| D-054 | El usuario valida funcionalmente `I-002` en navegador; los ajustes de presentación observados se mantienen diferidos para la revisión final conforme a D-048. |
 
 ## Preguntas abiertas
 
@@ -70,6 +71,10 @@ Estas preguntas no bloquean el primer incremento vertical si las capacidades aso
 | P-010 | ¿La sección equivalente a “limitaciones” debe formar parte de AbsenceLens? No existe una columna ni una regla asociada en el alcance actual. | Usuario interesado |
 | P-011 | Para cubrir el dashboard de tasa, ¿se proporcionará una fuente autorizada de horas netas/trabajadas y la fórmula, o se sustituirá por métricas derivables del Excel de ausencias? | Usuario interesado |
 | P-012 | ¿Cuáles son los valores exactos de la paleta de marca, preferiblemente en hexadecimal, y sus usos previstos? | Usuario interesado |
+| P-013 | En `I-003`, ¿los filtros adicionales solo acotan la revisión visible o deben recalcular las reglas R1/R2? | Usuario interesado |
+| P-014 | ¿El detalle operativo debe mostrar una fila por registro de ausencia asociado a los empleados candidatos, manteniendo el listado principal por empleado? | Usuario interesado |
+| P-015 | ¿La exportación debe reproducir solo la vista activa y sus filtros, o incluir conjuntamente R1 y R2? | Usuario interesado |
+| P-016 | ¿Se acepta un libro exportado con hojas separadas de resumen, candidatos y registros, excluyendo la duración errónea de origen? | Usuario interesado |
 
 ## Preguntas para gráficos
 
