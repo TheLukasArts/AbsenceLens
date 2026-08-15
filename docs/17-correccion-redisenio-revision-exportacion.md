@@ -3,6 +3,16 @@
 ## Estado
 
 Especificación confirmada e implementada el 15/08/2026. La exclusión de vacaciones, la adyacencia temporal, la estructura de navegación y el modelo revisado de exportación están cerrados y cubiertos por pruebas automatizadas.
++## Ajuste posterior confirmado
+
+Las decisiones D-067 a D-075 sustituyen algunos patrones explorados inicialmente en este documento:
+
+- no se introduce paginación; R1 y R2 muestran top 10 inicialmente y todos los candidatos bajo petición, mientras Revisión usa scroll;
+- los filtros son locales a cada pestaña;
+- Revisión utiliza una tabla combinada por empleado en lugar de maestro-detalle;
+- la ficha y la explicación se fusionan en un diálogo reusable;
+- Angular Material se adopta selectivamente conforme a ADR-0003;
+- los ajustes de análisis se agregan y se expresan sin códigos técnicos en la interfaz habitual.
 
 ## Hallazgo funcional
 
@@ -118,4 +128,4 @@ La mejora completa de semántica, controles y combinaciones avanzadas permanece 
 
 ## Decisiones confirmadas
 
-- Las decisiones están registradas como D-060 a D-066 en `docs/06-decisiones-pendientes-roadmap.md`.
+- Las decisiones están registradas como D-060 a D-075 en `docs/06-decisiones-pendientes-roadmap.md`.

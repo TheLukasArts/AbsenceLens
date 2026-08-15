@@ -27,7 +27,7 @@ describe('App', () => {
     expect(text).toContain('Eliminar sesión');
   });
 
-  it('importa, analiza, explica R1 y elimina una sesión con teclado', async () => {
+  it('importa, analiza, abre la ficha R1 y elimina la sesión', async () => {
     const root = await importWorkbook(buildWorkbook());
 
     expect(root.textContent).toContain('5 filas válidas');
@@ -38,13 +38,16 @@ describe('App', () => {
     expect(root.textContent).toContain('000001');
     expect(root.textContent).toContain('1 coincidencias R1');
 
-    findButton(root, 'Ver explicación').click();
+    findButton(root, 'Ver ficha').click();
     detectChanges();
-    const dialog = root.querySelector<HTMLElement>('[role="dialog"]')!;
+    await activeFixture.whenStable();
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"]')!;
     expect(dialog.textContent).toContain('R1-v1');
-    dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    findButton(dialog, 'Cerrar').click();
+    await activeFixture.whenStable();
+    await waitForDialogClose();
     detectChanges();
-    expect(root.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 
     findButton(root, 'Eliminar sesión').click();
     detectChanges();
@@ -66,29 +69,31 @@ describe('App', () => {
     expect(root.textContent).toContain('000012');
 
     const bcnFilter = [...root.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')].find(
-      (input) => input.parentElement?.textContent?.includes('BCN'),
+      (input) => input.closest('mat-checkbox')?.textContent?.includes('BCN'),
     )!;
-    bcnFilter.checked = true;
-    bcnFilter.dispatchEvent(new Event('change', { bubbles: true }));
+    bcnFilter.click();
     detectChanges();
 
     expect(root.textContent).not.toContain('000010');
     expect(root.textContent).toContain('000011');
     expect(root.textContent).toContain('000012');
 
-    findButton(root, 'Ver explicación').click();
+    findButton(root, 'Ver ficha').click();
     detectChanges();
-    const dialog = root.querySelector<HTMLElement>('[role="dialog"]')!;
+    await activeFixture.whenStable();
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"]')!;
     expect(dialog.textContent).toContain('R2-v1');
     expect(dialog.textContent).toContain('Episodio representativo');
-    dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    findButton(dialog, 'Cerrar').click();
+    await activeFixture.whenStable();
+    await waitForDialogClose();
     detectChanges();
-    expect(root.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 
     expect(readWorkbook).toHaveBeenCalledOnce();
   });
 
-  it('filtra la revisión y exporta el listado global completo de la vista activa', async () => {
+  it('mantiene local el filtro de revisión y exporta el listado R2 completo', async () => {
     const root = await importWorkbook(buildWorkbookWithLongDurations());
     setCutoff(root);
     findButton(root, 'Ejecutar análisis').click();
@@ -110,16 +115,19 @@ describe('App', () => {
 
     expect(root.textContent).not.toContain('000010');
     expect(root.textContent).toContain('Ubicación - Código: BCN');
-    expect(root.textContent).toContain('empleados · 1 episodios médicos');
+    expect(root.textContent).toContain('2empleados candidatos');
 
-    root.querySelector<HTMLButtonElement>('[data-testid="export-report"]')!.click();
+    findButton(root, 'Larga duración').click();
+    detectChanges();
+    expect(root.textContent).toContain('000010');
+    root.querySelector<HTMLButtonElement>('[data-testid="export-report-r2"]')!.click();
     await activeFixture.whenStable();
     detectChanges();
 
     expect(createReport).toHaveBeenCalledOnce();
     const report = createReport.mock.calls[0][0] as CandidateReport;
     expect(report.sheets.map((sheet) => sheet.name)).toEqual(['Resumen', 'Candidatos']);
-    expect(report.sheets[1].rows).toHaveLength(3);
+    expect(report.sheets[1].rows).toHaveLength(4);
     expect(saveDownload).toHaveBeenCalledWith(expect.any(Blob), report.fileName);
   });
 
@@ -129,14 +137,17 @@ describe('App', () => {
     findButton(root, 'Ejecutar análisis').click();
     detectChanges();
 
-    findButton(root, 'Abrir ficha').click();
+    findButton(root, 'Ver ficha').click();
     detectChanges();
-    expect(root.textContent).toContain('Ficha de candidato');
-    expect(root.textContent).toContain('5 episodios médicos pertinentes');
-    expect(root.textContent).not.toContain('Vacaciones');
-
-    findButton(root, 'Exportar ficha').click();
     await activeFixture.whenStable();
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"]')!;
+    expect(dialog.textContent).toContain('Ficha explicable');
+    expect(dialog.textContent).toContain('Episodios contabilizados');
+    expect(dialog.textContent).not.toContain('Vacaciones');
+
+    findButton(dialog, 'Exportar Excel').click();
+    await activeFixture.whenStable();
+    await waitForDialogClose();
     detectChanges();
 
     const report = createReport.mock.calls[0][0] as CandidateReport;
@@ -241,6 +252,10 @@ function absenceRow(
 
 function workbook(rows: readonly (readonly WorkbookCell[])[]): WorkbookData {
   return { sheets: [{ name: 'Ausencias', rows: [EXPECTED_HEADERS, ...rows] }] };
+}
+
+async function waitForDialogClose(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 100));
 }
 
 function findButton(root: HTMLElement, label: string): HTMLButtonElement {

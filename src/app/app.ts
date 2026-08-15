@@ -8,8 +8,31 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSortModule, Sort } from '@angular/material/sort';
+import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import {
+  AnalysisAdjustment,
+  summarizeAnalysisAdjustments,
+} from './application/analysis-adjustments';
+import {
+  CandidateReviewSortColumn,
+  CandidateReviewSortDirection,
+  CandidateReviewSummary,
+  buildCandidateReviewSummaries,
+  sortCandidateReviewSummaries,
+} from './application/candidate-review';
 import { SystemClock, lastCompleteMonthCutoff } from './application/clock';
 import {
+  EXPECTED_HEADERS,
   ImportIssue,
   ValidatedAbsenceRecord,
   validateAbsenceWorkbook,
@@ -34,17 +57,11 @@ import {
   rowsForEmployees,
 } from './application/review';
 import { AbsenceEpisode, EpisodeWarningCode } from './domain/absence';
-import {
-  LocalDate,
-  compareLocalDates,
-  formatIsoDate,
-  formatSpanishDate,
-  parseIsoDate,
-} from './domain/local-date';
+import { LocalDate, formatIsoDate, formatSpanishDate, parseIsoDate } from './domain/local-date';
 import {
   LongDurationCandidate,
   buildLongDurationCandidates,
-  selectLongDurationTop,
+  filterLongDurationCandidates,
 } from './domain/long-duration';
 import {
   CandidateMatch,
@@ -55,19 +72,31 @@ import {
 import { ReadExcelFileWorkbookReader } from './infrastructure/read-excel-file-workbook-reader';
 import { BrowserDownload } from './infrastructure/browser-download';
 import { WriteExcelFileReportExporter } from './infrastructure/write-excel-file-report-exporter';
+import {
+  CandidateDetailDialogComponent,
+  CandidateDetailDialogData,
+  CandidateDetailSection,
+} from './presentation/candidate-detail-dialog.component';
 
 type Phase = 'idle' | 'reading' | 'validating' | 'ready' | 'analyzing' | 'results' | 'error';
 type ResultView = 'r1' | 'r2';
 type ResultSection = ResultView | 'review';
 
-interface AnalysisWarning {
-  readonly row: number;
-  readonly code: EpisodeWarningCode;
-}
-
 @Component({
   selector: 'app-root',
-  imports: [FormsModule],
+  imports: [
+    FormsModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatSortModule,
+    MatTableModule,
+    MatTabsModule,
+    MatTooltipModule,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -80,13 +109,13 @@ export class App {
   private readonly reportExporter = inject(WriteExcelFileReportExporter);
   private readonly browserDownload = inject(BrowserDownload);
   private readonly clock = inject(SystemClock);
+  private readonly dialog = inject(MatDialog);
   private lastFocusedElement: HTMLElement | null = null;
   private records: readonly ValidatedAbsenceRecord[] = [];
 
   protected readonly phase = signal<Phase>('idle');
   protected readonly statusMessage = signal('Esperando un archivo sintético.');
   protected readonly importErrors = signal<readonly ImportIssue[]>([]);
-  protected readonly sourceWarningCount = signal(0);
   protected readonly importedRowCount = signal(0);
   protected readonly candidates = signal<readonly CandidateMatch[]>([]);
   protected readonly longCandidates = signal<readonly LongDurationCandidate[]>([]);
@@ -98,13 +127,17 @@ export class App {
   protected readonly reviewStartToIso = signal('');
   protected readonly reviewSortColumn = signal<ReviewColumn>('start');
   protected readonly reviewSortDirection = signal<SortDirection>('asc');
-  protected readonly analysisWarnings = signal<readonly AnalysisWarning[]>([]);
+  protected readonly analysisWarnings = signal<readonly AnalysisAdjustment[]>([]);
   protected readonly selectedCandidate = signal<CandidateMatch | null>(null);
   protected readonly selectedLongCandidate = signal<LongDurationCandidate | null>(null);
   protected readonly selectedCentres = signal<readonly string[]>([]);
   protected readonly resultView = signal<ResultView>('r1');
   protected readonly resultSection = signal<ResultSection>('r1');
   protected readonly selectedReviewEmployeeId = signal<string | null>(null);
+  protected readonly showAllR1 = signal(false);
+  protected readonly showAllR2 = signal(false);
+  protected readonly candidateSortColumn = signal<CandidateReviewSortColumn>('employeeId');
+  protected readonly candidateSortDirection = signal<CandidateReviewSortDirection>('asc');
   protected readonly cutoffIso = signal(formatIsoDate(lastCompleteMonthCutoff(this.clock.today())));
   protected readonly busy = computed(
     () => ['reading', 'validating', 'analyzing'].includes(this.phase()) || this.exportBusy(),
@@ -112,6 +145,7 @@ export class App {
   protected readonly exportBusy = signal(false);
   protected readonly exportError = signal('');
   protected readonly reviewColumns = REVIEW_COLUMNS;
+  protected readonly expectedHeaders = EXPECTED_HEADERS;
   protected readonly canAnalyze = computed(
     () => this.phase() === 'ready' || this.phase() === 'results',
   );
@@ -119,7 +153,7 @@ export class App {
     [...new Set(this.longCandidates().map((item) => item.representativeEpisode.workCentre))].sort(),
   );
   protected readonly longTop = computed(() =>
-    selectLongDurationTop(this.longCandidates(), new Set(this.selectedCentres())),
+    filterLongDurationCandidates(this.longCandidates(), new Set(this.selectedCentres())),
   );
   private readonly reviewEmployeeIds = computed(
     () =>
@@ -202,6 +236,52 @@ export class App {
       ? this.visibleCandidates().length
       : this.visibleLongCandidates().length,
   );
+  protected readonly displayedCandidates = computed(() =>
+    this.showAllR1() ? this.candidates() : this.candidates().slice(0, 10),
+  );
+  protected readonly displayedLongCandidates = computed(() =>
+    this.showAllR2() ? this.longTop() : this.longTop().slice(0, 10),
+  );
+  private readonly candidateReviewSummaries = computed(() =>
+    buildCandidateReviewSummaries(this.candidates(), this.longCandidates()),
+  );
+  private readonly candidateEmployeeIds = computed(
+    () => new Set(this.candidateReviewSummaries().map((row) => row.employeeId)),
+  );
+  private readonly candidateReviewRows = computed(() =>
+    rowsForEmployees(this.reviewRows(), this.candidateEmployeeIds()),
+  );
+  private readonly candidateFilterRows = computed(() =>
+    queryReviewRows(this.candidateReviewRows(), {
+      filters: this.reviewFilters(),
+      startFrom: parseIsoDate(this.reviewStartFromIso()),
+      startTo: parseIsoDate(this.reviewStartToIso()),
+      sortColumn: 'start',
+      sortDirection: 'asc',
+    }),
+  );
+  private readonly candidateFilteredEmployeeIds = computed(
+    () => new Set(this.candidateFilterRows().map((row) => row.employeeId)),
+  );
+  protected readonly filteredCandidateReview = computed(() => {
+    const rows = this.candidateReviewSummaries().filter((row) =>
+      this.candidateFilteredEmployeeIds().has(row.employeeId),
+    );
+    return sortCandidateReviewSummaries(
+      rows,
+      this.candidateSortColumn(),
+      this.candidateSortDirection(),
+    );
+  });
+  protected readonly reviewDisplayedColumns = [
+    'employeeId',
+    'rules',
+    'episodeCount',
+    'mostRecentStart',
+    'maximumDuration',
+    'workCentre',
+    'actions',
+  ];
 
   protected async selectFile(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
@@ -232,7 +312,6 @@ export class App {
       }
 
       this.records = validation.records;
-      this.sourceWarningCount.set(validation.warnings.length);
       this.importedRowCount.set(validation.records.length);
       this.phase.set('ready');
       this.statusMessage.set(
@@ -256,18 +335,7 @@ export class App {
 
     const normalized = normalizeAbsenceRecords(this.records, cutoff);
     const window = recurrenceWindowFor(cutoff);
-    this.analysisWarnings.set(
-      normalized.episodes.flatMap((episode) => {
-        const own = episode.warnings.map((code) => ({ row: episode.sourceRow, code }));
-        const intersection =
-          episode.effectiveEnd !== null &&
-          compareLocalDates(episode.start, window.start) < 0 &&
-          compareLocalDates(episode.effectiveEnd, window.start) >= 0
-            ? [{ row: episode.sourceRow, code: 'INTERSECTS_WINDOW_FROM_BEFORE' as const }]
-            : [];
-        return [...own, ...intersection];
-      }),
-    );
+    this.analysisWarnings.set(summarizeAnalysisAdjustments(normalized.episodes, window));
 
     const recurrenceCandidates = findShortDurationRecurrences(normalized.episodes, cutoff);
     const longDurationCandidates = buildLongDurationCandidates(normalized.episodes, cutoff);
@@ -275,6 +343,8 @@ export class App {
     this.longCandidates.set(longDurationCandidates);
     this.reviewRows.set(buildReviewRows(this.records, normalized.episodes));
     this.selectedCentres.set([]);
+    this.showAllR1.set(false);
+    this.showAllR2.set(false);
     this.phase.set('results');
     this.statusMessage.set(
       `Análisis completado: ${recurrenceCandidates.length} coincidencias R1 y ${longDurationCandidates.length} candidaturas R2 para revisión humana.`,
@@ -302,8 +372,7 @@ export class App {
     this.selectedReviewEmployeeId.set(employeeId);
   }
 
-  protected toggleCentre(centre: string, event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
+  protected toggleCentre(centre: string, checked: boolean): void {
     this.selectedCentres.update((selected) =>
       checked
         ? [...new Set([...selected, centre])].sort()
@@ -368,9 +437,24 @@ export class App {
     return `${reviewColumnLabel(filter.column)}: ${filter.value}`;
   }
 
+  protected changeCandidateSort(sort: Sort): void {
+    const columns: CandidateReviewSortColumn[] = [
+      'employeeId',
+      'rules',
+      'episodeCount',
+      'mostRecentStart',
+      'maximumDuration',
+      'workCentre',
+    ];
+    if (!columns.includes(sort.active as CandidateReviewSortColumn)) return;
+    this.candidateSortColumn.set(sort.active as CandidateReviewSortColumn);
+    this.candidateSortDirection.set(sort.direction === 'desc' ? 'desc' : 'asc');
+  }
+
   protected async exportCurrentView(): Promise<void> {
     const cutoff = parseIsoDate(this.cutoffIso());
-    if (!cutoff || this.resultCount() === 0) return;
+    const count = this.resultView() === 'r1' ? this.candidates().length : this.longTop().length;
+    if (!cutoff || count === 0) return;
 
     this.exportBusy.set(true);
     this.exportError.set('');
@@ -378,16 +462,16 @@ export class App {
       const report = buildCandidateListReport({
         view: this.resultView(),
         cutoff,
-        filters: this.reviewFilters(),
-        startFrom: parseIsoDate(this.reviewStartFromIso()),
-        startTo: parseIsoDate(this.reviewStartToIso()),
+        filters: [],
+        startFrom: null,
+        startTo: null,
         candidateTable: this.currentCandidateTable(),
         warningCount: this.analysisWarnings().length,
       });
       const blob = await this.reportExporter.create(report);
       this.browserDownload.save(blob, report.fileName);
       this.statusMessage.set(
-        `Listado exportado: ${this.resultCount()} candidatos en ${report.sheets.length} hojas.`,
+        `Listado exportado: ${count} candidatos en ${report.sheets.length} hojas.`,
       );
     } catch {
       this.exportError.set('No se pudo generar el Excel. Los datos permanecen en esta sesión.');
@@ -414,6 +498,32 @@ export class App {
     } finally {
       this.exportBusy.set(false);
     }
+  }
+
+  protected openCandidateDetail(employeeId: string, view?: ResultView): void {
+    const sections = (view ? [view] : (['r1', 'r2'] as const))
+      .map((item) => this.candidateDialogSection(employeeId, item))
+      .filter((item): item is CandidateDetailSection => item !== null);
+    if (sections.length === 0) return;
+
+    const cutoff = parseIsoDate(this.cutoffIso());
+    if (!cutoff) return;
+    const data: CandidateDetailDialogData = {
+      employeeId,
+      cutoff: formatSpanishDate(cutoff),
+      sections,
+    };
+    this.dialog
+      .open(CandidateDetailDialogComponent, {
+        data,
+        autoFocus: 'dialog',
+        restoreFocus: true,
+        maxWidth: '96vw',
+      })
+      .afterClosed()
+      .subscribe((result?: { exportView?: ResultView }) => {
+        if (result?.exportView) void this.exportCandidate(employeeId, result.exportView);
+      });
   }
 
   protected openExplanation(candidate: CandidateMatch): void {
@@ -448,7 +558,6 @@ export class App {
     this.phase.set('idle');
     this.statusMessage.set('Sesión eliminada. Esperando un archivo sintético.');
     this.importErrors.set([]);
-    this.sourceWarningCount.set(0);
     this.importedRowCount.set(0);
     this.resetResults();
     this.cutoffIso.set(formatIsoDate(lastCompleteMonthCutoff(this.clock.today())));
@@ -458,8 +567,8 @@ export class App {
     }
   }
 
-  protected formatDate(value: LocalDate): string {
-    return formatSpanishDate(value);
+  protected formatDate(value: LocalDate | undefined): string {
+    return value ? formatSpanishDate(value) : '—';
   }
 
   protected longEpisodeStatus(episode: AbsenceEpisode): string {
@@ -486,18 +595,28 @@ export class App {
       DATE_INVALID: 'La fecha no es válida.',
       END_BEFORE_START: 'La fecha final es anterior a la inicial.',
       ABSENCE_DESCRIPTION_UNKNOWN: 'La descripción de ausencia no pertenece al inventario.',
-      SOURCE_DURATION_DISCARDED: 'La duración de origen se ha descartado.',
     };
     return labels[issue.code];
   }
 
-  protected warningLabel(code: EpisodeWarningCode): string {
-    const labels: Record<EpisodeWarningCode, string> = {
-      START_AFTER_CUTOFF: 'Inicio posterior al corte: episodio excluido.',
-      END_AFTER_CUTOFF: 'Final posterior al corte: episodio recortado.',
-      OPEN_END: 'Final abierto: se utiliza la fecha de corte.',
+  protected warningLabel(adjustment: AnalysisAdjustment): string {
+    const labels: Record<AnalysisAdjustment['code'], string> = {
+      START_AFTER_CUTOFF: 'episodios médicos comienzan después de la fecha de corte y se excluyen',
+      END_AFTER_CUTOFF:
+        'episodios médicos terminan después del corte y se calculan hasta esa fecha',
+      OPEN_END: 'episodios médicos no tienen fecha final y se calculan hasta la fecha de corte',
       INTERSECTS_WINDOW_FROM_BEFORE:
-        'Interseca la ventana, pero comenzó antes y no incrementa el contador.',
+        'episodios médicos ya estaban en curso al comenzar la ventana y no aumentan la recurrencia',
+    };
+    return `${adjustment.count} ${labels[adjustment.code]}.`;
+  }
+
+  protected episodeWarningLabel(code: EpisodeWarningCode): string {
+    const labels: Record<EpisodeWarningCode, string> = {
+      START_AFTER_CUTOFF: 'Inicio posterior al corte.',
+      END_AFTER_CUTOFF: 'Final calculado hasta el corte.',
+      OPEN_END: 'Final abierto calculado hasta el corte.',
+      INTERSECTS_WINDOW_FROM_BEFORE: 'Episodio iniciado antes de la ventana de recurrencia.',
     };
     return labels[code];
   }
@@ -525,7 +644,6 @@ export class App {
     this.records = [];
     this.importErrors.set(errors);
     this.importedRowCount.set(0);
-    this.sourceWarningCount.set(0);
     this.phase.set('error');
     this.statusMessage.set(
       `La validación encontró ${errors.length} errores bloqueantes. No se ha ejecutado el análisis.`,
@@ -542,7 +660,7 @@ export class App {
           'Inicio de ventana',
           'Fin de ventana',
         ],
-        rows: this.visibleCandidates().map((candidate) => [
+        rows: this.candidates().map((candidate) => [
           candidate.employeeId,
           candidate.episodeCount,
           formatSpanishDate(candidate.mostRecentStart),
@@ -562,7 +680,7 @@ export class App {
         'Episodios largos',
         'Estado',
       ],
-      rows: this.visibleLongCandidates().map((candidate) => [
+      rows: this.longTop().map((candidate) => [
         candidate.employeeId,
         candidate.maximumDuration,
         formatSpanishDate(candidate.representativeEpisode.start),
@@ -624,6 +742,32 @@ export class App {
       episodes: this.reviewRows()
         .filter((row) => outcomes.has(row.sourceRow))
         .map((review) => ({ review, outcome: outcomes.get(review.sourceRow)! })),
+    };
+  }
+
+  private candidateDialogSection(
+    employeeId: string,
+    view: ResultView,
+  ): CandidateDetailSection | null {
+    const input = this.candidateDetailInput(employeeId, view);
+    if (!input) return null;
+
+    return {
+      view,
+      rule: view === 'r1' ? 'R1-v1' : 'R2-v1',
+      title: view === 'r1' ? 'Recurrencia corta' : 'Larga duración',
+      metrics: input.details,
+      episodes: input.episodes.map(({ review, outcome }) => ({
+        period: `${formatSpanishDate(review.start)}–${
+          review.effectiveEnd ? formatSpanishDate(review.effectiveEnd) : 'fuera del corte'
+        }`,
+        duration:
+          review.effectiveDuration === null
+            ? 'Duración no disponible'
+            : `${review.effectiveDuration} días`,
+        centre: review.locationCode,
+        outcome,
+      })),
     };
   }
 

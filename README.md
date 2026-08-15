@@ -6,7 +6,7 @@ AbsenceLens es una aplicación web local-first que importa un único archivo Exc
 
 ## Estado
 
-`I-001` e `I-002` están implementados y validados funcionalmente en navegador. La revisión manual de `I-003` detectó una corrección necesaria: las vacaciones, aunque ya están excluidas de R1/R2, también deben desaparecer del detalle operativo y de las exportaciones habituales. La reorganización de revisión y exportación está definida en una propuesta pendiente de confirmar. El entorno de desarrollo canónico es WSL 2 y el procesamiento continúa siendo íntegramente local.
+`I-001`, `I-002` e `I-003` están implementados. La corrección de revisión y exportación también está implementada y cubierta por pruebas automatizadas; queda pendiente la validación visual del usuario en navegador. Vacaciones se conserva solo como contexto futuro y no aparece en R1, R2, Revisión ni sus exportaciones. R1 y R2 ofrecen top 10 y conjunto completo, Revisión combina una fila por empleado y la ficha explicable se abre en un diálogo reusable. El entorno canónico continúa siendo WSL 2 y todo el procesamiento permanece local.
 
 ## Documentación de referencia
 
@@ -29,6 +29,7 @@ AbsenceLens es una aplicación web local-first que importa un único archivo Exc
 - [Corrección y rediseño de revisión y exportación](docs/17-correccion-redisenio-revision-exportacion.md)
 - [ADR-0001: lector XLSX en navegador](docs/adr/0001-lector-xlsx.md)
 - [ADR-0002: escritor XLSX en navegador](docs/adr/0002-escritor-xlsx.md)
+- [ADR-0003: adopción selectiva de Angular Material](docs/adr/0003-angular-material.md)
 
 ## Desarrollo local
 

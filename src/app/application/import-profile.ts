@@ -42,7 +42,7 @@ export type ImportErrorCode =
   | 'END_BEFORE_START'
   | 'ABSENCE_DESCRIPTION_UNKNOWN';
 
-export type ImportWarningCode = 'SOURCE_DURATION_DISCARDED';
+export type ImportWarningCode = never;
 
 export interface ImportIssue {
   readonly severity: 'error' | 'warning';
@@ -130,15 +130,6 @@ export function validateAbsenceWorkbook(workbook: WorkbookData): WorkbookValidat
 
     if (start !== null && end !== null && compareLocalDates(end, start) < 0) {
       errors.push(error(sourceRow, 'Fecha Fin Ausencia', 'END_BEFORE_START'));
-    }
-
-    if (!isEmpty(row[13])) {
-      warnings.push({
-        severity: 'warning',
-        code: 'SOURCE_DURATION_DISCARDED',
-        row: sourceRow,
-        column: 'Número de Días de Ausencia a Fecha de hoy',
-      });
     }
 
     const rowHasErrors = errors.some((issue) => issue.row === sourceRow);

@@ -87,13 +87,17 @@ export function selectLongDurationTop(
     throw new Error('INVALID_RESULT_LIMIT');
   }
 
-  return candidates
-    .filter(
-      (candidate) =>
-        selectedCentres.size === 0 ||
-        selectedCentres.has(candidate.representativeEpisode.workCentre),
-    )
-    .slice(0, limit);
+  return filterLongDurationCandidates(candidates, selectedCentres).slice(0, limit);
+}
+
+export function filterLongDurationCandidates(
+  candidates: readonly LongDurationCandidate[],
+  selectedCentres: ReadonlySet<string> = new Set<string>(),
+): LongDurationCandidate[] {
+  return candidates.filter(
+    (candidate) =>
+      selectedCentres.size === 0 || selectedCentres.has(candidate.representativeEpisode.workCentre),
+  );
 }
 
 function compareLongEpisodes(left: LongEpisode, right: LongEpisode): number {

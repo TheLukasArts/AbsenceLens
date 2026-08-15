@@ -12,8 +12,8 @@
       <p class="eyebrow">Análisis temporal · R1 y R2</p>
       <h1 id="page-title">Ausencias explicables para revisión humana</h1>
       <p>
-        Importa un libro <strong>completamente sintético</strong>. Los datos se leen y analizan en
-        este navegador, sin backend, persistencia ni telemetría.
+        Importa un <strong>archivo de ejemplo, sin datos reales</strong>. Los datos se leen y
+        analizan en este navegador, sin backend, persistencia ni telemetría.
       </p>
     </div>
     <div class="privacy-card">
@@ -30,15 +30,26 @@
       <span class="step">1</span>
       <div>
         <h2 id="import-title">Importar y validar</h2>
-        <p>Perfil <code>ausencias-v1</code>, una hoja y 14 columnas exactas.</p>
+        <p>
+          Perfil <code>ausencias-v1</code>. Consulta el formato de columnas esperado antes de
+          importar.
+        </p>
       </div>
     </div>
+    <details class="profile-preview">
+      <summary>Ver las columnas esperadas</summary>
+      <ol>
+        @for (header of expectedHeaders; track header) {
+          <li>{{ header }}</li>
+        }
+      </ol>
+    </details>
 
     <div class="import-grid">
       <label class="file-drop" [class.busy]="busy()">
         <span class="file-icon" aria-hidden="true">XLSX</span>
         <span>
-          <strong>Seleccionar Excel sintético</strong>
+          <strong>Seleccionar archivo de ejemplo</strong>
           <small>No se conserva el nombre del archivo.</small>
         </span>
         <input
@@ -65,8 +76,9 @@
           <span>Filas válidas</span><strong>{{ importedRowCount() }}</strong>
         </article>
         <article><span>Errores bloqueantes</span><strong>0</strong></article>
-        <article>
-          <span>Duraciones descartadas</span><strong>{{ sourceWarningCount() }}</strong>
+        <article title="Se calcula a partir de las fechas de inicio y fin del archivo">
+          <span>Duración</span><strong>Calculada</strong>
+          <small>Según las fechas del archivo</small>
         </article>
       </div>
     }
@@ -151,662 +163,428 @@
           <p class="eyebrow">Resultados explicables</p>
           <h2 id="results-title">Candidatos para revisión humana</h2>
         </div>
-        <span class="result-count" aria-label="Resultados visibles">{{ resultCount() }}</span>
-        <button
-          class="primary"
-          data-testid="export-report"
-          type="button"
-          [disabled]="resultCount() === 0 || exportBusy()"
-          (click)="exportCurrentView()"
-        >
-          {{ exportBusy() ? 'Preparando…' : 'Exportar listado' }}
-        </button>
       </div>
 
-      <div class="result-tabs" role="tablist" aria-label="Listados de análisis">
+      <nav
+        mat-tab-nav-bar
+        [tabPanel]="resultsPanel"
+        aria-label="Listados de análisis"
+        class="result-tabs"
+      >
         <button
-          id="tab-r1"
-          class="tab-button"
-          [class.active]="resultSection() === 'r1'"
+          mat-tab-link
           type="button"
-          role="tab"
-          [attr.aria-selected]="resultSection() === 'r1'"
-          aria-controls="panel-r1"
+          [active]="resultSection() === 'r1'"
           (click)="selectResultView('r1')"
         >
           Recurrencia corta <span>{{ candidates().length }}</span>
         </button>
         <button
-          id="tab-r2"
-          class="tab-button"
-          [class.active]="resultSection() === 'r2'"
+          mat-tab-link
           type="button"
-          role="tab"
-          [attr.aria-selected]="resultSection() === 'r2'"
-          aria-controls="panel-r2"
+          [active]="resultSection() === 'r2'"
           (click)="selectResultView('r2')"
         >
           Larga duración <span>{{ longCandidates().length }}</span>
         </button>
         <button
-          id="tab-review"
-          class="tab-button"
-          [class.active]="resultSection() === 'review'"
+          mat-tab-link
           type="button"
-          role="tab"
-          [attr.aria-selected]="resultSection() === 'review'"
-          aria-controls="panel-review"
+          [active]="resultSection() === 'review'"
           (click)="openReviewSection()"
         >
-          Revisión <span>{{ resultCount() }}</span>
+          Revisión <span>{{ filteredCandidateReview().length }}</span>
         </button>
-      </div>
-
-      @if (analysisWarnings().length > 0) {
-        <details class="warning-panel">
-          <summary>{{ analysisWarnings().length }} advertencias del análisis</summary>
-          <ul>
-            @for (warning of analysisWarnings(); track $index) {
-              <li>
-                <strong>Fila {{ warning.row }}</strong>
-                <span>{{ warningLabel(warning.code) }}</span>
-                <code>{{ warning.code }}</code>
-              </li>
-            }
-          </ul>
-        </details>
-      }
-      @if (resultSection() === 'r1') {
-        <div id="panel-r1" role="tabpanel" aria-labelledby="tab-r1">
-          @if (visibleCandidates().length === 0) {
-            <p class="empty-result">
-              No se encontraron coincidencias R1 para la fecha de corte seleccionada.
-            </p>
-          } @else {
-            <div class="table-wrap">
-              <table>
-                <caption class="sr-only">
-                  Candidatos de recurrencia corta ordenados según R1
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Posición</th>
-                    <th scope="col">Nº Nómina</th>
-                    <th scope="col">Episodios</th>
-                    <th scope="col">Inicio más reciente</th>
-                    <th scope="col">Ventana evaluada</th>
-                    <th scope="col"><span class="sr-only">Acciones</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (
-                    candidate of visibleCandidates();
-                    track candidate.employeeId;
-                    let position = $index
-                  ) {
-                    <tr>
-                      <td>{{ position + 1 }}</td>
-                      <td>
-                        <code class="employee-id">{{ candidate.employeeId }}</code>
-                      </td>
-                      <td>
-                        <strong>{{ candidate.episodeCount }}</strong>
-                      </td>
-                      <td>{{ formatDate(candidate.mostRecentStart) }}</td>
-                      <td>
-                        {{ formatDate(candidate.window.start) }}–{{
-                          formatDate(candidate.window.end)
-                        }}
-                      </td>
-                      <td class="row-actions">
-                        <button
-                          class="link-button"
-                          type="button"
-                          (click)="openCandidateReview(candidate.employeeId, 'r1')"
-                        >
-                          Abrir ficha
-                        </button>
-                        <button
-                          class="link-button"
-                          type="button"
-                          [disabled]="exportBusy()"
-                          (click)="exportCandidate(candidate.employeeId, 'r1')"
-                        >
-                          Exportar ficha
-                        </button>
-                        <button
-                          class="link-button"
-                          type="button"
-                          (click)="openExplanation(candidate)"
-                        >
-                          Ver explicación
-                        </button>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          }
-        </div>
-      } @else if (resultSection() === 'r2') {
-        <div id="panel-r2" role="tabpanel" aria-labelledby="tab-r2">
-          <fieldset class="centre-filter">
-            <legend>Filtrar por centro del episodio representativo</legend>
-            <div class="centre-filter-row">
-              <div class="centre-options">
-                @for (centre of availableCentres(); track centre) {
-                  <label>
-                    <input
-                      type="checkbox"
-                      [checked]="isCentreSelected(centre)"
-                      (change)="toggleCentre(centre, $event)"
-                    />
-                    <span>{{ centre }}</span>
-                  </label>
-                }
-              </div>
-              <button
-                class="secondary"
-                type="button"
-                [disabled]="selectedCentres().length === 0"
-                (click)="clearCentreFilter()"
-              >
-                Mostrar todos
-              </button>
-            </div>
-            <small>
-              @if (selectedCentres().length === 0) {
-                Todos los centros representativos.
-              } @else {
-                Centros seleccionados: {{ selectedCentres().join(', ') }}.
+      </nav>
+      <mat-tab-nav-panel #resultsPanel>
+        @if (analysisWarnings().length > 0) {
+          <mat-expansion-panel class="warning-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>Ajustes aplicados durante el análisis</mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>Solo afectan a episodios médicos y no bloquean el resto del archivo.</p>
+            <ul>
+              @for (warning of analysisWarnings(); track $index) {
+                <li>{{ warningLabel(warning) }}</li>
               }
-              Se muestran como máximo diez empleados.
-            </small>
-          </fieldset>
-
-          @if (visibleLongCandidates().length === 0) {
-            <p class="empty-result">
-              No se encontraron candidaturas R2 para los centros seleccionados.
-            </p>
-          } @else {
-            <div class="table-wrap">
-              <table>
-                <caption class="sr-only">
-                  Top de empleados con episodios de larga duración según R2
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Posición</th>
-                    <th scope="col">Nº Nómina</th>
-                    <th scope="col">Duración máxima</th>
-                    <th scope="col">Inicio</th>
-                    <th scope="col">Final efectivo</th>
-                    <th scope="col">Centro</th>
-                    <th scope="col">Episodios largos</th>
-                    <th scope="col">Estado</th>
-                    <th scope="col"><span class="sr-only">Acciones</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (
-                    candidate of visibleLongCandidates();
-                    track candidate.employeeId;
-                    let position = $index
-                  ) {
-                    <tr>
-                      <td>{{ position + 1 }}</td>
-                      <td>
-                        <code class="employee-id">{{ candidate.employeeId }}</code>
-                      </td>
-                      <td>
-                        <strong>{{ candidate.maximumDuration }} días</strong>
-                      </td>
-                      <td>{{ formatDate(candidate.representativeEpisode.start) }}</td>
-                      <td>
-                        {{
-                          candidate.representativeEpisode.effectiveEnd
-                            ? formatDate(candidate.representativeEpisode.effectiveEnd)
-                            : '—'
-                        }}
-                      </td>
-                      <td>
-                        <code>{{ candidate.representativeEpisode.workCentre }}</code>
-                      </td>
-                      <td>{{ candidate.longEpisodeCount }}</td>
-                      <td>
-                        <span
-                          class="status-label"
-                          [class.warning]="candidate.representativeEpisode.warnings.length > 0"
-                        >
-                          {{ longEpisodeStatus(candidate.representativeEpisode) }}
-                        </span>
-                      </td>
-                      <td class="row-actions">
-                        <button
-                          class="link-button"
-                          type="button"
-                          (click)="openCandidateReview(candidate.employeeId, 'r2')"
-                        >
-                          Abrir ficha
-                        </button>
-                        <button
-                          class="link-button"
-                          type="button"
-                          [disabled]="exportBusy()"
-                          (click)="exportCandidate(candidate.employeeId, 'r2')"
-                        >
-                          Exportar ficha
-                        </button>
-                        <button
-                          class="link-button"
-                          type="button"
-                          (click)="openLongExplanation(candidate)"
-                        >
-                          Ver explicación
-                        </button>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          }
-        </div>
-      }
-
-      @if (resultSection() === 'review') {
-        <section class="review" aria-labelledby="review-title">
-          <div class="review-heading">
-            <div>
-              <p class="eyebrow">Detalle operativo</p>
-              <h3 id="review-title">Revisar registros y preparar informe</h3>
-              <p>Los filtros acotan la revisión visible; las reglas R1 y R2 no se recalculan.</p>
-            </div>
-            <div class="review-counts" aria-live="polite">
-              <strong>{{ resultCount() }}</strong>
-              <span>empleados · {{ activeReviewRows().length }} episodios médicos</span>
-            </div>
-          </div>
-          <div
-            class="review-master-detail"
-            id="panel-review"
-            role="tabpanel"
-            aria-labelledby="tab-review"
-          >
-            <aside class="review-master" aria-label="Candidatos disponibles">
-              <h4>Candidatos</h4>
-              <p>Selecciona una nómina para consultar su ficha.</p>
-              <div class="candidate-list">
-                @for (employeeId of reviewCandidateIds(); track employeeId) {
-                  <button
-                    type="button"
-                    [class.active]="activeReviewEmployeeId() === employeeId"
-                    (click)="selectReviewEmployee(employeeId)"
-                  >
-                    <code>{{ employeeId }}</code>
+            </ul>
+          </mat-expansion-panel>
+        }
+        @if (resultSection() === 'r1') {
+          <div id="panel-r1" role="tabpanel" aria-labelledby="tab-r1">
+            <div class="panel-toolbar">
+              <p>
+                Se muestran {{ displayedCandidates().length }} de
+                {{ candidates().length }} candidatos.
+              </p>
+              <div>
+                @if (candidates().length > 10) {
+                  <button mat-button type="button" (click)="showAllR1.set(!showAllR1())">
+                    {{ showAllR1() ? 'Ver top 10' : 'Ver todos' }}
                   </button>
                 }
-              </div>
-            </aside>
-            <article class="review-detail">
-              @if (activeReviewEmployeeId(); as employeeId) {
-                <div class="review-detail-heading">
-                  <div>
-                    <span>Ficha de candidato</span>
-                    <h4>
-                      <code>{{ employeeId }}</code>
-                    </h4>
-                    <p>
-                      {{
-                        resultView() === 'r1'
-                          ? 'Recurrencia corta · R1-v1'
-                          : 'Larga duración · R2-v1'
-                      }}
-                      · {{ activeReviewRows().length }} episodios médicos pertinentes
-                    </p>
-                  </div>
-                  <button
-                    class="primary"
-                    type="button"
-                    [disabled]="exportBusy()"
-                    (click)="exportCandidate(employeeId, resultView())"
-                  >
-                    Exportar ficha
-                  </button>
-                </div>
-                @if (activeR1ReviewCandidate(); as candidate) {
-                  <dl class="review-summary">
-                    <div>
-                      <dt>Episodios contabilizados</dt>
-                      <dd>{{ candidate.episodeCount }}</dd>
-                    </div>
-                    <div>
-                      <dt>Inicio más reciente</dt>
-                      <dd>{{ formatDate(candidate.mostRecentStart) }}</dd>
-                    </div>
-                  </dl>
-                }
-                @if (activeR2ReviewCandidate(); as candidate) {
-                  <dl class="review-summary">
-                    <div>
-                      <dt>Duración máxima</dt>
-                      <dd>{{ candidate.maximumDuration }} días</dd>
-                    </div>
-                    <div>
-                      <dt>Centro representativo</dt>
-                      <dd>{{ candidate.representativeEpisode.workCentre }}</dd>
-                    </div>
-                  </dl>
-                }
-              } @else {
-                <p class="empty-result">No hay candidatos visibles para revisar.</p>
-              }
-            </article>
-          </div>
-
-          <div class="review-controls">
-            <div class="filter-builder">
-              <label>
-                <span>Columna</span>
-                <select
-                  data-testid="review-filter-column"
-                  [ngModel]="reviewFilterColumn()"
-                  (ngModelChange)="setReviewFilterColumn($event)"
+                <button
+                  mat-stroked-button
+                  data-testid="export-report"
+                  type="button"
+                  [disabled]="candidates().length === 0 || exportBusy()"
+                  (click)="exportCurrentView()"
                 >
-                  @for (column of reviewColumns; track column.key) {
-                    <option [value]="column.key">{{ column.label }}</option>
-                  }
-                </select>
-              </label>
-              <label>
-                <span>Contiene</span>
-                <input
-                  data-testid="review-filter-value"
-                  type="text"
-                  [ngModel]="reviewFilterValue()"
-                  (ngModelChange)="reviewFilterValue.set($event)"
-                  (keydown.enter)="addReviewFilter()"
-                />
-              </label>
-              <button
-                class="secondary"
-                type="button"
-                [disabled]="!reviewFilterValue().trim()"
-                (click)="addReviewFilter()"
-              >
-                Añadir filtro
-              </button>
-            </div>
-
-            <div class="date-filter">
-              <label>
-                <span>Inicio desde</span>
-                <input
-                  type="date"
-                  [ngModel]="reviewStartFromIso()"
-                  (ngModelChange)="reviewStartFromIso.set($event)"
-                />
-              </label>
-              <label>
-                <span>Inicio hasta</span>
-                <input
-                  type="date"
-                  [ngModel]="reviewStartToIso()"
-                  (ngModelChange)="reviewStartToIso.set($event)"
-                />
-              </label>
-            </div>
-
-            <div class="sort-controls">
-              <label>
-                <span>Ordenar por</span>
-                <select
-                  [ngModel]="reviewSortColumn()"
-                  (ngModelChange)="setReviewSortColumn($event)"
-                >
-                  @for (column of reviewColumns; track column.key) {
-                    <option [value]="column.key">{{ column.label }}</option>
-                  }
-                </select>
-              </label>
-              <label>
-                <span>Dirección</span>
-                <select
-                  [ngModel]="reviewSortDirection()"
-                  (ngModelChange)="setReviewSortDirection($event)"
-                >
-                  <option value="asc">Ascendente</option>
-                  <option value="desc">Descendente</option>
-                </select>
-              </label>
-            </div>
-          </div>
-
-          <div class="review-actions">
-            <div class="filter-chips" aria-label="Filtros activos">
-              @for (filter of reviewFilters(); track filter.column) {
-                <button type="button" (click)="removeReviewFilter(filter.column)">
-                  {{ reviewFilterLabel(filter) }} <span aria-hidden="true">×</span>
+                  {{ exportBusy() ? 'Preparando…' : 'Exportar listado completo' }}
                 </button>
-              }
-              @if (!hasReviewFilters()) {
-                <span>Sin filtros adicionales</span>
-              }
+              </div>
             </div>
-            <div>
-              <button
-                class="secondary"
-                type="button"
-                [disabled]="!hasReviewFilters()"
-                (click)="clearReviewFilters()"
-              >
-                Limpiar filtros
-              </button>
-            </div>
-          </div>
-
-          @if (exportError()) {
-            <p class="export-error" role="alert">{{ exportError() }}</p>
-          }
-
-          <div class="table-wrap review-table">
-            <table>
-              <caption class="sr-only">
-                Registros de ausencia visibles para la revisión actual
-              </caption>
-              <thead>
-                <tr>
-                  @for (column of reviewColumns; track column.key) {
-                    <th scope="col">{{ column.label }}</th>
-                  }
-                </tr>
-              </thead>
-              <tbody>
-                @for (row of activeReviewRows(); track row.sourceRow) {
-                  <tr>
-                    @for (column of reviewColumns; track column.key) {
-                      <td>{{ reviewCell(row, column.key) }}</td>
+            @if (candidates().length === 0) {
+              <p class="empty-result">
+                No se encontraron coincidencias R1 para la fecha de corte seleccionada.
+              </p>
+            } @else {
+              <div class="table-wrap">
+                <table>
+                  <caption class="sr-only">
+                    Candidatos de recurrencia corta ordenados según R1
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Posición</th>
+                      <th scope="col">Nº Nómina</th>
+                      <th scope="col">Episodios</th>
+                      <th scope="col">Inicio más reciente</th>
+                      <th scope="col">Ventana evaluada</th>
+                      <th scope="col"><span class="sr-only">Acciones</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (
+                      candidate of displayedCandidates();
+                      track candidate.employeeId;
+                      let position = $index
+                    ) {
+                      <tr>
+                        <td>{{ position + 1 }}</td>
+                        <td>
+                          <code class="employee-id">{{ candidate.employeeId }}</code>
+                        </td>
+                        <td>
+                          <strong>{{ candidate.episodeCount }}</strong>
+                        </td>
+                        <td>{{ formatDate(candidate.mostRecentStart) }}</td>
+                        <td>
+                          {{ formatDate(candidate.window.start) }}–{{
+                            formatDate(candidate.window.end)
+                          }}
+                        </td>
+                        <td class="row-actions">
+                          <button
+                            mat-button
+                            type="button"
+                            matTooltip="Ver ficha y explicación"
+                            (click)="openCandidateDetail(candidate.employeeId, 'r1')"
+                          >
+                            Ver ficha
+                          </button>
+                        </td>
+                      </tr>
                     }
-                  </tr>
-                }
-              </tbody>
-            </table>
+                  </tbody>
+                </table>
+              </div>
+            }
           </div>
-        </section>
-      }
+        } @else if (resultSection() === 'r2') {
+          <div id="panel-r2" role="tabpanel" aria-labelledby="tab-r2">
+            <fieldset class="centre-filter">
+              <legend>Filtrar por centro del episodio representativo</legend>
+              <div class="centre-filter-row">
+                <div class="centre-options">
+                  @for (centre of availableCentres(); track centre) {
+                    <mat-checkbox
+                      [checked]="isCentreSelected(centre)"
+                      (change)="toggleCentre(centre, $event.checked)"
+                    >
+                      {{ centre }}
+                    </mat-checkbox>
+                  }
+                </div>
+                <button
+                  class="secondary"
+                  type="button"
+                  [disabled]="selectedCentres().length === 0"
+                  (click)="clearCentreFilter()"
+                >
+                  Mostrar todos
+                </button>
+              </div>
+              <small>
+                @if (selectedCentres().length === 0) {
+                  Todos los centros representativos.
+                } @else {
+                  Centros seleccionados: {{ selectedCentres().join(', ') }}.
+                }
+                El filtro solo afecta a esta pestaña.
+              </small>
+            </fieldset>
+            <div class="panel-toolbar">
+              <p>
+                Se muestran {{ displayedLongCandidates().length }} de
+                {{ longTop().length }} candidatos filtrados.
+              </p>
+              <div>
+                @if (longTop().length > 10) {
+                  <button mat-button type="button" (click)="showAllR2.set(!showAllR2())">
+                    {{ showAllR2() ? 'Ver top 10' : 'Ver todos' }}
+                  </button>
+                }
+                <button
+                  mat-stroked-button
+                  data-testid="export-report-r2"
+                  type="button"
+                  [disabled]="longTop().length === 0 || exportBusy()"
+                  (click)="exportCurrentView()"
+                >
+                  {{ exportBusy() ? 'Preparando…' : 'Exportar listado completo' }}
+                </button>
+              </div>
+            </div>
+
+            @if (longTop().length === 0) {
+              <p class="empty-result">
+                No se encontraron candidaturas R2 para los centros seleccionados.
+              </p>
+            } @else {
+              <div class="table-wrap">
+                <table>
+                  <caption class="sr-only">
+                    Top de empleados con episodios de larga duración según R2
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Posición</th>
+                      <th scope="col">Nº Nómina</th>
+                      <th scope="col">Duración máxima</th>
+                      <th scope="col">Inicio</th>
+                      <th scope="col">Final efectivo</th>
+                      <th scope="col">Centro</th>
+                      <th scope="col">Episodios largos</th>
+                      <th scope="col">Estado</th>
+                      <th scope="col"><span class="sr-only">Acciones</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (
+                      candidate of displayedLongCandidates();
+                      track candidate.employeeId;
+                      let position = $index
+                    ) {
+                      <tr>
+                        <td>{{ position + 1 }}</td>
+                        <td>
+                          <code class="employee-id">{{ candidate.employeeId }}</code>
+                        </td>
+                        <td>
+                          <strong>{{ candidate.maximumDuration }} días</strong>
+                        </td>
+                        <td>{{ formatDate(candidate.representativeEpisode.start) }}</td>
+                        <td>
+                          {{
+                            candidate.representativeEpisode.effectiveEnd
+                              ? formatDate(candidate.representativeEpisode.effectiveEnd)
+                              : '—'
+                          }}
+                        </td>
+                        <td>
+                          <code>{{ candidate.representativeEpisode.workCentre }}</code>
+                        </td>
+                        <td>{{ candidate.longEpisodeCount }}</td>
+                        <td>
+                          <span
+                            class="status-label"
+                            [class.warning]="candidate.representativeEpisode.warnings.length > 0"
+                          >
+                            {{ longEpisodeStatus(candidate.representativeEpisode) }}
+                          </span>
+                        </td>
+                        <td class="row-actions">
+                          <button
+                            mat-button
+                            type="button"
+                            matTooltip="Ver ficha y explicación"
+                            (click)="openCandidateDetail(candidate.employeeId, 'r2')"
+                          >
+                            Ver ficha
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+
+        @if (resultSection() === 'review') {
+          <section class="review" aria-labelledby="review-title">
+            <div class="review-heading">
+              <div>
+                <p class="eyebrow">Detalle operativo</p>
+                <h3 id="review-title">Revisar registros y preparar informe</h3>
+                <p>Los filtros acotan la revisión visible; las reglas R1 y R2 no se recalculan.</p>
+              </div>
+              <div class="review-counts" aria-live="polite">
+                <strong>{{ filteredCandidateReview().length }}</strong>
+                <span>empleados candidatos</span>
+              </div>
+            </div>
+
+            <div class="review-controls">
+              <div class="filter-builder">
+                <label>
+                  <span>Columna</span>
+                  <select
+                    data-testid="review-filter-column"
+                    [ngModel]="reviewFilterColumn()"
+                    (ngModelChange)="setReviewFilterColumn($event)"
+                  >
+                    @for (column of reviewColumns; track column.key) {
+                      <option [value]="column.key">{{ column.label }}</option>
+                    }
+                  </select>
+                </label>
+                <label>
+                  <span>Contiene</span>
+                  <input
+                    data-testid="review-filter-value"
+                    type="text"
+                    [ngModel]="reviewFilterValue()"
+                    (ngModelChange)="reviewFilterValue.set($event)"
+                    (keydown.enter)="addReviewFilter()"
+                  />
+                </label>
+                <button
+                  class="secondary"
+                  type="button"
+                  [disabled]="!reviewFilterValue().trim()"
+                  (click)="addReviewFilter()"
+                >
+                  Añadir filtro
+                </button>
+              </div>
+
+              <div class="date-filter">
+                <label>
+                  <span>Inicio desde</span>
+                  <input
+                    type="date"
+                    [ngModel]="reviewStartFromIso()"
+                    (ngModelChange)="reviewStartFromIso.set($event)"
+                  />
+                </label>
+                <label>
+                  <span>Inicio hasta</span>
+                  <input
+                    type="date"
+                    [ngModel]="reviewStartToIso()"
+                    (ngModelChange)="reviewStartToIso.set($event)"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div class="review-actions">
+              <div class="filter-chips" aria-label="Filtros activos">
+                @for (filter of reviewFilters(); track filter.column) {
+                  <button type="button" (click)="removeReviewFilter(filter.column)">
+                    {{ reviewFilterLabel(filter) }} <span aria-hidden="true">×</span>
+                  </button>
+                }
+                @if (!hasReviewFilters()) {
+                  <span>Sin filtros adicionales</span>
+                }
+              </div>
+              <div>
+                <button
+                  class="secondary"
+                  type="button"
+                  [disabled]="!hasReviewFilters()"
+                  (click)="clearReviewFilters()"
+                >
+                  Limpiar filtros
+                </button>
+              </div>
+            </div>
+
+            @if (exportError()) {
+              <p class="export-error" role="alert">{{ exportError() }}</p>
+            }
+
+            <div class="table-wrap review-table review-scroll">
+              <table
+                mat-table
+                [dataSource]="filteredCandidateReview()"
+                matSort
+                [matSortActive]="candidateSortColumn()"
+                [matSortDirection]="candidateSortDirection()"
+                (matSortChange)="changeCandidateSort($event)"
+                aria-label="Candidatos combinados para revisión"
+              >
+                <ng-container matColumnDef="employeeId">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Nº Nómina</th>
+                  <td mat-cell *matCellDef="let row">
+                    <code class="employee-id">{{ row.employeeId }}</code>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="rules">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Reglas</th>
+                  <td mat-cell *matCellDef="let row">{{ row.rules.join(' + ') }}</td>
+                </ng-container>
+                <ng-container matColumnDef="episodeCount">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Episodios R1</th>
+                  <td mat-cell *matCellDef="let row">{{ row.recurrence?.episodeCount ?? '—' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="mostRecentStart">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Inicio reciente</th>
+                  <td mat-cell *matCellDef="let row">
+                    {{ row.recurrence ? formatDate(row.recurrence.mostRecentStart) : '—' }}
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="maximumDuration">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Duración máxima</th>
+                  <td mat-cell *matCellDef="let row">
+                    {{ row.longDuration ? row.longDuration.maximumDuration + ' días' : '—' }}
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="workCentre">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Centro</th>
+                  <td mat-cell *matCellDef="let row">
+                    {{ row.longDuration?.representativeEpisode?.workCentre ?? '—' }}
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                  <td mat-cell *matCellDef="let row">
+                    <button
+                      mat-button
+                      type="button"
+                      matTooltip="Ver ficha, explicación y exportación"
+                      (click)="openCandidateDetail(row.employeeId)"
+                    >
+                      Ver ficha
+                    </button>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="reviewDisplayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: reviewDisplayedColumns"></tr>
+              </table>
+              @if (filteredCandidateReview().length === 0) {
+                <p class="empty-result">
+                  No hay candidatos que coincidan con los filtros de revisión.
+                </p>
+              }
+            </div>
+          </section>
+        }
+      </mat-tab-nav-panel>
     </section>
   }
 </main>
-
-@if (selectedCandidate(); as selected) {
-  <div class="modal-backdrop" (click)="closeExplanation()">
-    <section
-      #explanationDialog
-      class="explanation"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="explanation-title-r1"
-      tabindex="-1"
-      (click)="$event.stopPropagation()"
-      (keydown)="handleDialogKeydown($event)"
-    >
-      <header>
-        <div>
-          <p class="eyebrow">{{ selected.explanation.ruleId }}</p>
-          <h2 id="explanation-title-r1">Explicación de {{ selected.employeeId }}</h2>
-        </div>
-        <button
-          class="close-button"
-          type="button"
-          aria-label="Cerrar explicación"
-          (click)="closeExplanation()"
-        >
-          ×
-        </button>
-      </header>
-
-      <dl class="explanation-summary">
-        <div>
-          <dt>Fecha de corte</dt>
-          <dd>{{ formatDate(selected.explanation.cutoff) }}</dd>
-        </div>
-        <div>
-          <dt>Ventana</dt>
-          <dd>
-            {{ formatDate(selected.explanation.window.start) }}–{{
-              formatDate(selected.explanation.window.end)
-            }}
-          </dd>
-        </div>
-        <div>
-          <dt>Umbral</dt>
-          <dd>{{ selected.explanation.threshold }} episodios</dd>
-        </div>
-        <div>
-          <dt>Duración máxima</dt>
-          <dd>{{ selected.explanation.maximumShortDuration }} días</dd>
-        </div>
-      </dl>
-
-      <div class="episode-list">
-        @for (item of selected.explanation.episodes; track item.episode.id) {
-          <article [class.excluded]="!item.counted">
-            <div>
-              <strong>
-                {{ formatDate(item.episode.start) }}–{{
-                  item.episode.effectiveEnd
-                    ? formatDate(item.episode.effectiveEnd)
-                    : 'fuera del corte'
-                }}
-              </strong>
-              <span>{{ reasonLabel(item.reason) }}</span>
-            </div>
-            <dl>
-              <div>
-                <dt>Duración efectiva</dt>
-                <dd>{{ item.effectiveDuration ?? '—' }}</dd>
-              </div>
-              <div>
-                <dt>Días en ventana</dt>
-                <dd>{{ item.daysInsideWindow }}</dd>
-              </div>
-              <div>
-                <dt>Fila de origen</dt>
-                <dd>{{ item.episode.sourceRow }}</dd>
-              </div>
-            </dl>
-          </article>
-        }
-      </div>
-    </section>
-  </div>
-}
-
-@if (selectedLongCandidate(); as selected) {
-  <div class="modal-backdrop" (click)="closeExplanation()">
-    <section
-      #explanationDialog
-      class="explanation"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="explanation-title-r2"
-      tabindex="-1"
-      (click)="$event.stopPropagation()"
-      (keydown)="handleDialogKeydown($event)"
-    >
-      <header>
-        <div>
-          <p class="eyebrow">{{ selected.explanation.ruleId }}</p>
-          <h2 id="explanation-title-r2">Explicación de {{ selected.employeeId }}</h2>
-        </div>
-        <button
-          class="close-button"
-          type="button"
-          aria-label="Cerrar explicación"
-          (click)="closeExplanation()"
-        >
-          ×
-        </button>
-      </header>
-
-      <dl class="explanation-summary">
-        <div>
-          <dt>Fecha de corte</dt>
-          <dd>{{ formatDate(selected.explanation.cutoff) }}</dd>
-        </div>
-        <div>
-          <dt>Umbral</dt>
-          <dd>{{ selected.explanation.threshold }} días</dd>
-        </div>
-        <div>
-          <dt>Duración máxima</dt>
-          <dd>{{ selected.maximumDuration }} días</dd>
-        </div>
-        <div>
-          <dt>Centro representativo</dt>
-          <dd>{{ selected.representativeEpisode.workCentre }}</dd>
-        </div>
-      </dl>
-
-      <div class="episode-list">
-        @for (item of selected.explanation.episodes; track item.episode.id) {
-          <article [class.representative]="item.representative">
-            <div>
-              <strong>
-                {{ formatDate(item.episode.start) }}–{{
-                  item.episode.effectiveEnd ? formatDate(item.episode.effectiveEnd) : '—'
-                }}
-              </strong>
-              <span>
-                {{ item.representative ? 'Episodio representativo' : 'Otro episodio largo' }}
-                · {{ longEpisodeStatus(item.episode) }}
-              </span>
-              @for (warning of item.episode.warnings; track warning) {
-                <small class="episode-warning">{{ warningLabel(warning) }}</small>
-              }
-            </div>
-            <dl>
-              <div>
-                <dt>Duración efectiva</dt>
-                <dd>{{ item.effectiveDuration }} días</dd>
-              </div>
-              <div>
-                <dt>Final original</dt>
-                <dd>{{ formatDate(item.episode.originalEnd) }}</dd>
-              </div>
-              <div>
-                <dt>Centro</dt>
-                <dd>{{ item.episode.workCentre }}</dd>
-              </div>
-              <div>
-                <dt>Fila de origen</dt>
-                <dd>{{ item.episode.sourceRow }}</dd>
-              </div>
-            </dl>
-          </article>
-        }
-      </div>
-    </section>
-  </div>
-}

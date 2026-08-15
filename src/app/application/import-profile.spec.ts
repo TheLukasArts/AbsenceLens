@@ -44,14 +44,7 @@ describe('perfil ausencias-v1', () => {
 
     expect(result.errors).toEqual([]);
     expect(result.records[0].employeeId).toBe('000070');
-    expect(result.warnings).toEqual([
-      {
-        severity: 'warning',
-        code: 'SOURCE_DURATION_DISCARDED',
-        row: 2,
-        column: 'Número de Días de Ausencia a Fecha de hoy',
-      },
-    ]);
+    expect(result.warnings).toEqual([]);
   });
 
   it('sanea errores de fila sin incluir el valor de la celda', () => {
