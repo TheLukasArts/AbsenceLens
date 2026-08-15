@@ -2,7 +2,7 @@
 
 ## Estado
 
-Propuesta funcional del 15/08/2026. La exclusión de vacaciones está confirmada; la estructura exacta de navegación y exportación queda pendiente de confirmación antes de implementar.
+Propuesta funcional del 15/08/2026. La exclusión de vacaciones, la adyacencia temporal y la estructura de navegación están confirmadas. Queda pendiente confirmar únicamente el modelo revisado de exportación antes de implementar.
 
 ## Hallazgo funcional
 
@@ -38,8 +38,7 @@ La navegación permanece visible y muestra los recuentos, por ejemplo `Recurrenc
 - Barra de herramientas fija en la parte superior del listado.
 - Búsqueda rápida por nómina y filtros habituales visibles.
 - Tabla con paginación sencilla o renderizado incremental para mantener fluidez con centenares de candidatos.
-- Acción principal `Abrir ficha` en cada fila.
-- Casillas de selección para preparar exportaciones de uno o varios empleados.
+- Acciones `Abrir ficha` y `Exportar ficha` en cada fila.
 - Acción `Exportar listado` siempre accesible en la barra superior.
 
 ### Sección Revisión
@@ -77,15 +76,25 @@ Genera:
 
 No incluye una hoja global `Registros`.
 
-### Exportar fichas seleccionadas
+### Exportar ficha individual
 
-Genera:
+Disponible directamente en cada fila candidata y dentro de la sección `Revisión`. Genera un libro pequeño con una única hoja `Ficha`:
 
-- `Resumen`;
-- `Candidatos` con los empleados seleccionados;
-- una hoja por empleado, nombrada de forma neutra y segura, con sus episodios médicos y explicación.
+- cabecera con regla, fecha de corte y atributos informativos esenciales;
+- métricas que justifican la candidatura;
+- episodios médicos considerados, con duración, estado y motivo;
+- episodios médicos descartados que formen parte de la explicación de R1;
+- ningún registro de vacaciones.
 
-La interfaz muestra cuántas fichas se exportarán. Se recomienda limitar cada libro a 25 empleados para mantenerlo manejable; si hay más seleccionados, la aplicación solicita acotar la selección en lugar de crear silenciosamente centenares de pestañas.
+El listado global mantiene todos los candidatos visibles sin límite artificial. La ficha individual evita crear centenares de pestañas y permite obtener el detalle preciso desde la propia fila, sin buscar manualmente cuando la sesión sigue abierta. Si se parte del Excel general en otro momento de la misma sesión, la búsqueda rápida por nómina permite localizar y exportar la ficha.
+
+### Alternativas descartadas para el MVP
+
+- Una hoja por cada candidato: completa, pero inmanejable con centenares de pestañas.
+- Un límite de fichas por libro: manejable, pero sesga u oculta parte del conjunto seleccionado.
+- Un ZIP con un libro por empleado: genera centenares de archivos y añade complejidad sin mejorar la revisión.
+- Una hoja global de registros: obliga de nuevo a filtrar y comprobar manualmente.
+- Un libro con índice y enlaces internos: exigiría personalizar OOXML o sustituir la librería actual, una complejidad desproporcionada frente al acceso directo desde la aplicación.
 
 ## Filtros
 
@@ -103,11 +112,10 @@ La mejora completa de semántica, controles y combinaciones avanzadas permanece 
 3. `Revisión` es accesible sin desplazarse hasta el final de un listado.
 4. `Abrir ficha` conserva el contexto del listado al volver.
 5. `Exportar listado` no contiene registros individuales.
-6. `Exportar fichas seleccionadas` crea una hoja por empleado seleccionado y ninguna hoja contiene vacaciones.
+6. `Exportar ficha` genera el detalle médico completo del empleado elegido y no contiene vacaciones.
 7. Los identificadores conservan sus ceros a la izquierda.
 8. Todo el procesamiento y la generación del libro permanecen en el navegador y en memoria.
 
 ## Decisiones pendientes antes de implementar
 
-- Confirmar el patrón maestro-detalle propuesto para `Revisión`.
-- Confirmar las dos modalidades de exportación y el máximo recomendado de 25 fichas por libro.
+- Confirmar las dos modalidades: listado global completo con `Resumen + Candidatos` y ficha individual exportable desde cada fila o desde `Revisión`.

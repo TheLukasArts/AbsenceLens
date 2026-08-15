@@ -64,8 +64,11 @@
 | D-058 | El libro exportado contiene las hojas `Resumen`, `Candidatos` y `Registros`, y excluye la duración errónea del origen. |
 | D-059 | `I-003` utiliza `write-excel-file` 4.1.1 tras el puerto `CandidateReportExporter`, según ADR-0002. |
 | D-060 | `Vacaciones` queda excluida de R1, R2, los listados, el detalle operativo habitual y sus exportaciones. Se conserva únicamente como contexto para futuros análisis temporales con vacaciones o festivos. |
-| D-061 | El detalle operativo deja de situarse debajo de listados potencialmente largos y tendrá acceso directo desde la navegación de resultados y desde cada candidato. |
+| D-061 | El detalle operativo deja de situarse debajo de listados potencialmente largos y se organiza en una sección `Revisión` independiente con patrón maestro-detalle, accesible desde la navegación de resultados y desde cada candidato. |
 | D-062 | El rediseño priorizará filtros habituales simples; los filtros avanzados se mantienen como mejora posterior y no bloquean la corrección actual. |
+| D-063 | Ninguna exportación global puede truncar o limitar arbitrariamente el conjunto visible de candidatos; la usabilidad no se resolverá sesgando información. |
+| D-064 | Las vacaciones y los festivos se usarán para detectar adyacencia inmediata anterior o posterior, no solapamiento literal. La mención a solapamientos fue una imprecisión terminológica. |
+| D-065 | La ficha individual será accesible y exportable directamente desde cada fila candidata y desde la sección `Revisión`, sin obligar a recorrer el detalle global. |
 
 ## Preguntas abiertas
 
@@ -79,9 +82,7 @@ Estas preguntas no bloquean el primer incremento vertical si las capacidades aso
 | P-010 | ¿La sección equivalente a “limitaciones” debe formar parte de AbsenceLens? No existe una columna ni una regla asociada en el alcance actual. | Usuario interesado |
 | P-011 | Para cubrir el dashboard de tasa, ¿se proporcionará una fuente autorizada de horas netas/trabajadas y la fórmula, o se sustituirá por métricas derivables del Excel de ausencias? | Usuario interesado |
 | P-012 | ¿Cuáles son los valores exactos de la paleta de marca, preferiblemente en hexadecimal, y sus usos previstos? | Usuario interesado |
-| P-015 | Cuando se habla de “solapar” bajas con vacaciones o festivos, ¿se busca solapamiento literal de fechas, adyacencia inmediata anterior/posterior o ambas relaciones? La fuente se había documentado sin solapamientos. | Usuario interesado |
-| P-013 | ¿Se confirma sustituir `Registros` por dos exportaciones: listado general sin detalle y fichas de empleados seleccionados con una hoja por empleado? | Usuario interesado |
-| P-014 | ¿Se confirma una sección `Revisión` independiente con lista maestra y ficha lateral del empleado, accesible desde la navegación principal y desde cada fila candidata? | Usuario interesado |
+| P-013 | ¿Se confirma sustituir la hoja global `Registros` por una exportación completa `Resumen + Candidatos` y una exportación individual `Ficha` disponible directamente en cada fila y ficha de empleado? | Usuario interesado |
 
 ## Preguntas para gráficos
 
