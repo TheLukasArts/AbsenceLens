@@ -1,167 +1,246 @@
 <header class="topbar">
-  <a class="brand" href="#main-content" aria-label="AbsenceLens, ir al contenido">
+  <a class="brand" href="#main-content" [attr.aria-label]="'app.skipToContent' | translate">
     <span class="brand-mark" aria-hidden="true">AL</span>
-    <span><strong>AbsenceLens</strong><small>Patrones temporales explicables</small></span>
+    <span
+      ><strong>AbsenceLens</strong><small>{{ 'app.tagline' | translate }}</small></span
+    >
   </a>
-  <span class="local-badge">Procesamiento local</span>
+  <span class="local-badge">{{ 'app.localProcessing' | translate }}</span>
 </header>
 
 <main id="main-content" class="shell">
   <section class="hero" aria-labelledby="page-title">
     <div>
-      <p class="eyebrow">Análisis temporal · R1 y R2</p>
-      <h1 id="page-title">Ausencias explicables para revisión humana</h1>
-      <p>
-        Importa un <strong>archivo de ejemplo, sin datos reales</strong>. Los datos se leen y
-        analizan en este navegador, sin backend, persistencia ni telemetría.
-      </p>
+      <p class="eyebrow">{{ 'app.eyebrow' | translate }}</p>
+      <h1 id="page-title">{{ 'app.title' | translate }}</h1>
+      <p>{{ 'app.introduction' | translate }}</p>
     </div>
     <div class="privacy-card">
       <span class="privacy-icon" aria-hidden="true">✓</span>
       <div>
-        <strong>Tu archivo no sale del dispositivo</strong>
-        <span>Al eliminar la sesión se descartan filas, resultados y explicaciones.</span>
+        <strong>{{ 'app.privacyTitle' | translate }}</strong>
+        <span>{{ 'app.privacyDescription' | translate }}</span>
       </div>
     </div>
   </section>
 
-  <section class="workspace" aria-labelledby="import-title">
-    <div class="section-heading">
-      <span class="step">1</span>
-      <div>
-        <h2 id="import-title">Importar y validar</h2>
-        <p>
-          Perfil <code>ausencias-v1</code>. Consulta el formato de columnas esperado antes de
-          importar.
-        </p>
-      </div>
-    </div>
-    <details class="profile-preview">
-      <summary>Ver las columnas esperadas</summary>
-      <ol>
-        @for (header of expectedHeaders; track header) {
-          <li>{{ header }}</li>
-        }
-      </ol>
-    </details>
-
-    <div class="import-grid">
-      <label class="file-drop" [class.busy]="busy()">
-        <span class="file-icon" aria-hidden="true">XLSX</span>
-        <span>
-          <strong>Seleccionar archivo de ejemplo</strong>
-          <small>No se conserva el nombre del archivo.</small>
-        </span>
-        <input
-          #fileInput
-          type="file"
-          accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          [disabled]="busy()"
-          (change)="selectFile($event)"
-        />
-      </label>
-
-      <div class="status-panel" role="status" aria-live="polite">
-        <span class="status-dot" [class.active]="phase() !== 'idle'"></span>
+  <section class="workflow-section" aria-labelledby="import-title">
+    <mat-card class="workspace" [class.completed]="phase() === 'ready' || phase() === 'results'">
+      <div class="section-heading">
+        <span class="step">1</span>
         <div>
-          <strong>Estado</strong>
-          <p>{{ statusMessage() }}</p>
+          <h2 id="import-title">{{ 'import.title' | translate }}</h2>
+          <p>{{ 'import.description' | translate }}</p>
+        </div>
+        @if (phase() === 'ready' || phase() === 'results') {
+          <button mat-button type="button" (click)="importExpanded.set(!importExpanded())">
+            {{ (importExpanded() ? 'import.hideDetails' : 'import.showDetails') | translate }}
+          </button>
+        }
+      </div>
+
+      @if (
+        importExpanded() ||
+        phase() === 'idle' ||
+        phase() === 'reading' ||
+        phase() === 'validating' ||
+        phase() === 'error'
+      ) {
+        <mat-card-content class="workflow-content">
+          <mat-expansion-panel class="profile-preview">
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{ 'import.expectedColumns' | translate }}</mat-panel-title>
+            </mat-expansion-panel-header>
+            <ol>
+              @for (header of expectedHeaders; track header) {
+                <li>{{ header }}</li>
+              }
+            </ol>
+          </mat-expansion-panel>
+
+          <div class="import-grid">
+            <label class="file-drop" [class.busy]="busy()">
+              <span class="file-icon" aria-hidden="true">XLSX</span>
+              <span>
+                <strong>{{ 'import.selectFile' | translate }}</strong>
+                <small>{{ 'import.localOnly' | translate }}</small>
+              </span>
+              <input
+                #fileInput
+                type="file"
+                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                [disabled]="busy()"
+                (change)="selectFile($event)"
+              />
+            </label>
+
+            @if (phase() === 'reading' || phase() === 'validating') {
+              <div class="status-panel" role="status" aria-live="polite">
+                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                <p>{{ statusMessage() }}</p>
+              </div>
+            }
+          </div>
+
+          @if (importErrors().length > 0) {
+            <div class="error-panel" role="alert" aria-labelledby="errors-title">
+              <h3 id="errors-title">{{ 'import.errorsTitle' | translate }}</h3>
+              <p>{{ 'import.errorsPrivacy' | translate }}</p>
+              <ul>
+                @for (issue of importErrors(); track $index) {
+                  <li>
+                    @if (issue.row) {
+                      <strong>Fila {{ issue.row }}</strong>
+                    }
+                    @if (issue.column) {
+                      <span> · {{ issue.column }}</span>
+                    }
+                    <span> · {{ issueLabel(issue) }}</span>
+                    <code>{{ issue.code }}</code>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </mat-card-content>
+      } @else {
+        <mat-card-content class="compact-summary" aria-live="polite">
+          <div>
+            <span>{{ 'import.loadedFile' | translate }}</span>
+            <strong>{{ loadedFileName() }}</strong>
+          </div>
+          <div>
+            <span>{{ 'import.validRows' | translate }}</span>
+            <strong>{{ importedRowCount() }}</strong>
+          </div>
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="busy()"
+            (click)="chooseAnotherFile()"
+          >
+            {{ 'import.changeFile' | translate }}
+          </button>
+        </mat-card-content>
+      }
+    </mat-card>
+  </section>
+
+  <section class="workflow-section" aria-labelledby="analysis-title">
+    <mat-card
+      class="workspace"
+      [class.locked]="
+        phase() === 'idle' ||
+        phase() === 'reading' ||
+        phase() === 'validating' ||
+        phase() === 'error'
+      "
+    >
+      <div class="section-heading">
+        <span class="step">2</span>
+        <div>
+          <h2 id="analysis-title">{{ 'analysis.title' | translate }}</h2>
+          <p>{{ 'analysis.description' | translate }}</p>
         </div>
       </div>
-    </div>
 
-    @if (phase() === 'ready' || phase() === 'results') {
-      <div class="summary-grid" aria-label="Resumen de importación">
-        <article>
-          <span>Filas válidas</span><strong>{{ importedRowCount() }}</strong>
-        </article>
-        <article><span>Errores bloqueantes</span><strong>0</strong></article>
-        <article title="Se calcula a partir de las fechas de inicio y fin del archivo">
-          <span>Duración</span><strong>Calculada</strong>
-          <small>Según las fechas del archivo</small>
-        </article>
-      </div>
-    }
+      @if (
+        phase() === 'idle' ||
+        phase() === 'reading' ||
+        phase() === 'validating' ||
+        phase() === 'error'
+      ) {
+        <mat-card-content class="locked-message">
+          <p>{{ 'analysis.unavailable' | translate }}</p>
+        </mat-card-content>
+      } @else if (phase() === 'results' && !analysisExpanded()) {
+        <mat-card-content class="compact-summary analysis-summary">
+          <div>
+            <span>{{ 'analysis.completed' | translate }}</span>
+            <strong>{{
+              'analysis.completedPeriod' | translate: { cutoff: formattedCutoff() }
+            }}</strong>
+          </div>
+          <div class="summary-actions">
+            <button mat-stroked-button type="button" (click)="modifyAnalysis()">
+              {{ 'analysis.modify' | translate }}
+            </button>
+            <button
+              mat-button
+              type="button"
+              [matTooltip]="'session.clearTooltip' | translate"
+              (click)="requestClearSession()"
+            >
+              {{ 'session.clear' | translate }}
+            </button>
+          </div>
+        </mat-card-content>
+      } @else {
+        <mat-card-content class="workflow-content">
+          <div class="analysis-controls">
+            <label>
+              <span>{{ 'analysis.cutoff' | translate }}</span>
+              <input
+                type="date"
+                [ngModel]="cutoffIso()"
+                (ngModelChange)="cutoffIso.set($event)"
+                [disabled]="busy()"
+              />
+            </label>
+            <button
+              mat-flat-button
+              type="button"
+              [disabled]="!canAnalyze() || busy()"
+              (click)="analyze()"
+            >
+              {{ 'analysis.run' | translate }}
+            </button>
+            <button
+              mat-button
+              type="button"
+              [disabled]="busy()"
+              [matTooltip]="'session.clearTooltip' | translate"
+              (click)="requestClearSession()"
+            >
+              {{ 'session.clear' | translate }}
+            </button>
+          </div>
 
-    @if (importErrors().length > 0) {
-      <div class="error-panel" role="alert" aria-labelledby="errors-title">
-        <h3 id="errors-title">Errores bloqueantes</h3>
-        <p>Los mensajes no incluyen valores de las celdas.</p>
-        <ul>
-          @for (issue of importErrors(); track $index) {
-            <li>
-              @if (issue.row) {
-                <strong>Fila {{ issue.row }}</strong>
-              }
-              @if (issue.column) {
-                <span> · {{ issue.column }}</span>
-              }
-              <span> · {{ issueLabel(issue) }}</span>
-              <code>{{ issue.code }}</code>
-            </li>
+          @if (phase() === 'analyzing') {
+            <div class="analysis-progress" role="status" aria-live="polite">
+              <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+              <p>{{ statusMessage() }}</p>
+            </div>
           }
-        </ul>
-      </div>
-    }
-  </section>
 
-  <section class="workspace" aria-labelledby="analysis-title">
-    <div class="section-heading">
-      <span class="step">2</span>
-      <div>
-        <h2 id="analysis-title">Configurar y analizar</h2>
-        <p>Una fecha de corte para recurrencia corta y larga duración.</p>
-      </div>
-    </div>
-
-    <div class="analysis-controls">
-      <label>
-        <span>Fecha de corte</span>
-        <input
-          type="date"
-          [ngModel]="cutoffIso()"
-          (ngModelChange)="cutoffIso.set($event)"
-          [disabled]="busy()"
-        />
-      </label>
-      <button
-        class="primary"
-        type="button"
-        [disabled]="!canAnalyze() || busy()"
-        (click)="analyze()"
-      >
-        Ejecutar análisis
-      </button>
-      <button
-        class="secondary"
-        type="button"
-        [disabled]="phase() === 'idle'"
-        (click)="clearSession()"
-      >
-        Eliminar sesión
-      </button>
-    </div>
-
-    <div class="rule-grid">
-      <aside class="rule-card">
-        <strong>R1-v1 · Recurrencia corta</strong>
-        <span>Hasta 30 días; al menos 5 inicios en 12 meses.</span>
-        <span>Orden: cantidad, recencia y nómina.</span>
-      </aside>
-      <aside class="rule-card">
-        <strong>R2-v1 · Larga duración</strong>
-        <span>Desde 180 días efectivos; una fila por empleado.</span>
-        <span>Orden: duración, inicio y nómina.</span>
-      </aside>
-    </div>
+          <mat-expansion-panel class="rule-help">
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{ 'analysis.howItWorks' | translate }}</mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="rule-grid">
+              <aside class="rule-card">
+                <strong>{{ 'rules.shortRecurrence.label' | translate }}</strong>
+                <span>{{ 'rules.shortRecurrence.summary' | translate }}</span>
+                <span>{{ 'rules.shortRecurrence.order' | translate }}</span>
+              </aside>
+              <aside class="rule-card">
+                <strong>{{ 'rules.longDuration.label' | translate }}</strong>
+                <span>{{ 'rules.longDuration.summary' | translate }}</span>
+                <span>{{ 'rules.longDuration.order' | translate }}</span>
+              </aside>
+            </div>
+          </mat-expansion-panel>
+        </mat-card-content>
+      }
+    </mat-card>
   </section>
 
   @if (phase() === 'results') {
     <section class="results" aria-labelledby="results-title">
       <div class="results-heading">
         <div>
-          <p class="eyebrow">Resultados explicables</p>
-          <h2 id="results-title">Candidatos para revisión humana</h2>
+          <p class="eyebrow">{{ 'results.eyebrow' | translate }}</p>
+          <h2 id="results-title">{{ 'results.title' | translate }}</h2>
         </div>
       </div>
 
@@ -177,7 +256,7 @@
           [active]="resultSection() === 'r1'"
           (click)="selectResultView('r1')"
         >
-          Recurrencia corta <span>{{ candidates().length }}</span>
+          {{ 'rules.shortRecurrence.label' | translate }} <span>{{ candidates().length }}</span>
         </button>
         <button
           mat-tab-link
@@ -185,7 +264,7 @@
           [active]="resultSection() === 'r2'"
           (click)="selectResultView('r2')"
         >
-          Larga duración <span>{{ longCandidates().length }}</span>
+          {{ 'rules.longDuration.label' | translate }} <span>{{ longCandidates().length }}</span>
         </button>
         <button
           mat-tab-link
@@ -193,16 +272,16 @@
           [active]="resultSection() === 'review'"
           (click)="openReviewSection()"
         >
-          Revisión <span>{{ filteredCandidateReview().length }}</span>
+          {{ 'results.review' | translate }} <span>{{ filteredCandidateReview().length }}</span>
         </button>
       </nav>
       <mat-tab-nav-panel #resultsPanel>
         @if (analysisWarnings().length > 0) {
           <mat-expansion-panel class="warning-panel">
             <mat-expansion-panel-header>
-              <mat-panel-title>Ajustes aplicados durante el análisis</mat-panel-title>
+              <mat-panel-title>{{ 'analysis.warningsTitle' | translate }}</mat-panel-title>
             </mat-expansion-panel-header>
-            <p>Solo afectan a episodios médicos y no bloquean el resto del archivo.</p>
+            <p>{{ 'analysis.warningsDescription' | translate }}</p>
             <ul>
               @for (warning of analysisWarnings(); track $index) {
                 <li>{{ warningLabel(warning) }}</li>
@@ -214,13 +293,16 @@
           <div id="panel-r1" role="tabpanel" aria-labelledby="tab-r1">
             <div class="panel-toolbar">
               <p>
-                Se muestran {{ displayedCandidates().length }} de
-                {{ candidates().length }} candidatos.
+                {{
+                  'results.shown'
+                    | translate
+                      : { visible: displayedCandidates().length, total: candidates().length }
+                }}
               </p>
               <div>
                 @if (candidates().length > 10) {
                   <button mat-button type="button" (click)="showAllR1.set(!showAllR1())">
-                    {{ showAllR1() ? 'Ver top 10' : 'Ver todos' }}
+                    {{ (showAllR1() ? 'common.showTopTen' : 'common.all') | translate }}
                   </button>
                 }
                 <button
@@ -230,19 +312,19 @@
                   [disabled]="candidates().length === 0 || exportBusy()"
                   (click)="exportCurrentView()"
                 >
-                  {{ exportBusy() ? 'Preparando…' : 'Exportar listado completo' }}
+                  {{ (exportBusy() ? 'common.loadingExport' : 'common.exportList') | translate }}
                 </button>
               </div>
             </div>
             @if (candidates().length === 0) {
-              <p class="empty-result">
-                No se encontraron coincidencias R1 para la fecha de corte seleccionada.
-              </p>
+              <p class="empty-result">{{ 'rules.shortRecurrence.empty' | translate }}</p>
             } @else {
               <div class="table-wrap">
                 <table>
                   <caption class="sr-only">
-                    Candidatos de recurrencia corta ordenados según R1
+                    {{
+                      'rules.shortRecurrence.tableCaption' | translate
+                    }}
                   </caption>
                   <thead>
                     <tr>
@@ -278,10 +360,10 @@
                           <button
                             mat-button
                             type="button"
-                            matTooltip="Ver ficha y explicación"
+                            [matTooltip]="'results.detailTooltip' | translate"
                             (click)="openCandidateDetail(candidate.employeeId, 'r1')"
                           >
-                            Ver ficha
+                            {{ 'results.openDetail' | translate }}
                           </button>
                         </td>
                       </tr>
@@ -294,7 +376,7 @@
         } @else if (resultSection() === 'r2') {
           <div id="panel-r2" role="tabpanel" aria-labelledby="tab-r2">
             <fieldset class="centre-filter">
-              <legend>Filtrar por centro del episodio representativo</legend>
+              <legend>{{ 'results.representativeCentreFilter' | translate }}</legend>
               <div class="centre-filter-row">
                 <div class="centre-options">
                   @for (centre of availableCentres(); track centre) {
@@ -312,27 +394,32 @@
                   [disabled]="selectedCentres().length === 0"
                   (click)="clearCentreFilter()"
                 >
-                  Mostrar todos
+                  {{ 'results.showAllCentres' | translate }}
                 </button>
               </div>
               <small>
                 @if (selectedCentres().length === 0) {
-                  Todos los centros representativos.
+                  {{ 'results.allCentres' | translate }}
                 } @else {
-                  Centros seleccionados: {{ selectedCentres().join(', ') }}.
+                  {{
+                    'results.selectedCentres' | translate: { centres: selectedCentres().join(', ') }
+                  }}
                 }
-                El filtro solo afecta a esta pestaña.
+                {{ 'results.localFilter' | translate }}
               </small>
             </fieldset>
             <div class="panel-toolbar">
               <p>
-                Se muestran {{ displayedLongCandidates().length }} de
-                {{ longTop().length }} candidatos filtrados.
+                {{
+                  'results.shownFiltered'
+                    | translate
+                      : { visible: displayedLongCandidates().length, total: longTop().length }
+                }}
               </p>
               <div>
                 @if (longTop().length > 10) {
                   <button mat-button type="button" (click)="showAllR2.set(!showAllR2())">
-                    {{ showAllR2() ? 'Ver top 10' : 'Ver todos' }}
+                    {{ (showAllR2() ? 'common.showTopTen' : 'common.all') | translate }}
                   </button>
                 }
                 <button
@@ -342,20 +429,20 @@
                   [disabled]="longTop().length === 0 || exportBusy()"
                   (click)="exportCurrentView()"
                 >
-                  {{ exportBusy() ? 'Preparando…' : 'Exportar listado completo' }}
+                  {{ (exportBusy() ? 'common.loadingExport' : 'common.exportList') | translate }}
                 </button>
               </div>
             </div>
 
             @if (longTop().length === 0) {
-              <p class="empty-result">
-                No se encontraron candidaturas R2 para los centros seleccionados.
-              </p>
+              <p class="empty-result">{{ 'rules.longDuration.empty' | translate }}</p>
             } @else {
               <div class="table-wrap">
                 <table>
                   <caption class="sr-only">
-                    Top de empleados con episodios de larga duración según R2
+                    {{
+                      'rules.longDuration.tableCaption' | translate
+                    }}
                   </caption>
                   <thead>
                     <tr>
@@ -408,10 +495,10 @@
                           <button
                             mat-button
                             type="button"
-                            matTooltip="Ver ficha y explicación"
+                            [matTooltip]="'results.detailTooltip' | translate"
                             (click)="openCandidateDetail(candidate.employeeId, 'r2')"
                           >
-                            Ver ficha
+                            {{ 'results.openDetail' | translate }}
                           </button>
                         </td>
                       </tr>
@@ -427,13 +514,13 @@
           <section class="review" aria-labelledby="review-title">
             <div class="review-heading">
               <div>
-                <p class="eyebrow">Detalle operativo</p>
-                <h3 id="review-title">Revisar registros y preparar informe</h3>
-                <p>Los filtros acotan la revisión visible; las reglas R1 y R2 no se recalculan.</p>
+                <p class="eyebrow">{{ 'review.eyebrow' | translate }}</p>
+                <h3 id="review-title">{{ 'review.title' | translate }}</h3>
+                <p>{{ 'review.description' | translate }}</p>
               </div>
               <div class="review-counts" aria-live="polite">
                 <strong>{{ filteredCandidateReview().length }}</strong>
-                <span>empleados candidatos</span>
+                <span>{{ 'common.employees' | translate }}</span>
               </div>
             </div>
 
@@ -535,11 +622,22 @@
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="rules">
-                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Reglas</th>
-                  <td mat-cell *matCellDef="let row">{{ row.rules.join(' + ') }}</td>
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    {{ 'review.rules' | translate }}
+                  </th>
+                  <td mat-cell *matCellDef="let row">
+                    @for (rule of row.rules; track rule; let last = $last) {
+                      {{ ruleLabel(rule) }}
+                      @if (!last) {
+                        <span> + </span>
+                      }
+                    }
+                  </td>
                 </ng-container>
                 <ng-container matColumnDef="episodeCount">
-                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Episodios R1</th>
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    {{ 'review.shortEpisodes' | translate }}
+                  </th>
                   <td mat-cell *matCellDef="let row">{{ row.recurrence?.episodeCount ?? '—' }}</td>
                 </ng-container>
                 <ng-container matColumnDef="mostRecentStart">

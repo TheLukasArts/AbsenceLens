@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { TranslatePipe } from '@ngx-translate/core';
 
 export type CandidateDetailView = 'r1' | 'r2';
 
@@ -28,15 +29,24 @@ export interface CandidateDetailDialogData {
 
 @Component({
   selector: 'app-candidate-detail-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatTooltipModule],
+  imports: [MatDialogModule, MatButtonModule, MatTooltipModule, TranslatePipe],
   template: `
     <header class="dialog-heading">
       <div>
-        <p>Ficha explicable</p>
-        <h2 mat-dialog-title>Nº Nómina {{ data.employeeId }}</h2>
-        <span>Fecha de corte: {{ data.cutoff }}</span>
+        <p>{{ 'dialog.eyebrow' | translate }}</p>
+        <h2 mat-dialog-title>
+          {{ 'dialog.payrollTitle' | translate: { employeeId: data.employeeId } }}
+        </h2>
+        <span>{{ 'dialog.cutoff' | translate: { cutoff: data.cutoff } }}</span>
       </div>
-      <button mat-button type="button" mat-dialog-close aria-label="Cerrar ficha">Cerrar</button>
+      <button
+        mat-button
+        type="button"
+        mat-dialog-close
+        [attr.aria-label]="'dialog.closeLabel' | translate"
+      >
+        {{ 'common.close' | translate }}
+      </button>
     </header>
 
     <mat-dialog-content>
@@ -44,16 +54,15 @@ export interface CandidateDetailDialogData {
         <section class="rule-section">
           <div class="section-heading">
             <div>
-              <span>{{ section.rule }}</span>
               <h3>{{ section.title }}</h3>
             </div>
             <button
               mat-stroked-button
               type="button"
-              matTooltip="Exportar la ficha de esta regla a Excel"
+              [matTooltip]="'dialog.exportTooltip' | translate"
               (click)="export(section.view)"
             >
-              Exportar Excel
+              {{ 'common.exportExcel' | translate }}
             </button>
           </div>
 
@@ -66,14 +75,17 @@ export interface CandidateDetailDialogData {
             }
           </dl>
 
-          <div class="episode-list" aria-label="Episodios médicos pertinentes">
+          <div class="episode-list" [attr.aria-label]="'dialog.episodesLabel' | translate">
             @for (episode of section.episodes; track $index) {
               <article>
                 <div>
                   <strong>{{ episode.period }}</strong>
                   <span>{{ episode.outcome }}</span>
                 </div>
-                <small>{{ episode.duration }} · Centro {{ episode.centre }}</small>
+                <small
+                  >{{ episode.duration }} ·
+                  {{ 'dialog.centre' | translate: { centre: episode.centre } }}</small
+                >
               </article>
             }
           </div>
