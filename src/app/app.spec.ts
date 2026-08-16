@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { provideAppTranslations } from './app.config';
 import { EXPECTED_HEADERS } from './application/import-profile';
 import { CandidateReport } from './application/report';
 import { WorkbookCell, WorkbookData } from './application/workbook';
@@ -9,49 +10,63 @@ import { WriteExcelFileReportExporter } from './infrastructure/write-excel-file-
 import { App } from './app';
 
 describe('App', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [provideAppTranslations()] });
+  });
   it('crea la aplicación', async () => {
     await TestBed.configureTestingModule({ imports: [App] }).compileComponents();
     const fixture = TestBed.createComponent(App);
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('explica el procesamiento local y ofrece los flujos R1 y R2', async () => {
+  it('explica el procesamiento local y ofrece los dos análisis con nombres comprensibles', async () => {
     await TestBed.configureTestingModule({ imports: [App] }).compileComponents();
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Tu archivo no sale del dispositivo');
-    expect(text).toContain('Ejecutar análisis');
-    expect(text).toContain('R1-v1');
-    expect(text).toContain('R2-v1');
-    expect(text).toContain('Eliminar sesión');
+    expect(text).toContain('Carga y valida un archivo para configurar el análisis');
+    expect(text).toContain('Seleccionar archivo de ejemplo');
+    expect(text).toContain('Recurrencia corta');
+    expect(text).toContain('Larga duración');
+    expect(text).not.toMatch(/R1-v1|R2-v1/);
   });
 
   it('importa, analiza, abre la ficha R1 y elimina la sesión', async () => {
     const root = await importWorkbook(buildWorkbook());
 
-    expect(root.textContent).toContain('5 filas válidas');
+    expect(root.textContent).toContain('synthetic.xlsx');
+    expect(root.textContent).toContain('Filas válidas');
+    expect(root.textContent).toContain('5');
     setCutoff(root);
     findButton(root, 'Ejecutar análisis').click();
     detectChanges();
 
     expect(root.textContent).toContain('000001');
-    expect(root.textContent).toContain('1 coincidencias R1');
+    expect(root.textContent).toContain('Recurrencia corta');
 
     findButton(root, 'Ver ficha').click();
     detectChanges();
     await activeFixture.whenStable();
     const dialog = document.body.querySelector<HTMLElement>('[role="dialog"]')!;
-    expect(dialog.textContent).toContain('R1-v1');
+    expect(dialog.textContent).toContain('Recurrencia corta');
     findButton(dialog, 'Cerrar').click();
     await activeFixture.whenStable();
     await waitForDialogClose();
     detectChanges();
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 
-    findButton(root, 'Eliminar sesión').click();
+    findButton(root, 'Borrar datos y empezar de nuevo').click();
+    await activeFixture.whenStable();
+    const clearDialog = document.body.querySelector<HTMLElement>('[role="dialog"]')!;
+    expect(clearDialog.textContent).toContain(
+      'El archivo original y las descargas no se eliminarán',
+    );
+    findButton(clearDialog, 'Borrar datos').click();
+    await activeFixture.whenStable();
+    await waitForDialogClose();
     detectChanges();
-    expect(root.textContent).toContain('Sesión eliminada');
+    expect(root.textContent).toContain('Seleccionar archivo de ejemplo');
     expect(root.textContent).not.toContain('000001');
   });
 
@@ -82,7 +97,7 @@ describe('App', () => {
     detectChanges();
     await activeFixture.whenStable();
     const dialog = document.body.querySelector<HTMLElement>('[role="dialog"]')!;
-    expect(dialog.textContent).toContain('R2-v1');
+    expect(dialog.textContent).toContain('Larga duración');
     expect(dialog.textContent).toContain('Episodio representativo');
     findButton(dialog, 'Cerrar').click();
     await activeFixture.whenStable();

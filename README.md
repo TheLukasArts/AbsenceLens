@@ -30,6 +30,7 @@ AbsenceLens es una aplicación web local-first que importa un único archivo Exc
 - [ADR-0001: lector XLSX en navegador](docs/adr/0001-lector-xlsx.md)
 - [ADR-0002: escritor XLSX en navegador](docs/adr/0002-escritor-xlsx.md)
 - [ADR-0003: adopción selectiva de Angular Material](docs/adr/0003-angular-material.md)
+- [ADR-0004: catálogo de textos e internacionalización preparada](docs/adr/0004-i18n.md)
 
 ## Desarrollo local
 

@@ -9,16 +9,20 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   AnalysisAdjustment,
   summarizeAnalysisAdjustments,
@@ -77,6 +81,7 @@ import {
   CandidateDetailDialogData,
   CandidateDetailSection,
 } from './presentation/candidate-detail-dialog.component';
+import { ClearSessionDialogComponent } from './presentation/clear-session-dialog.component';
 
 type Phase = 'idle' | 'reading' | 'validating' | 'ready' | 'analyzing' | 'results' | 'error';
 type ResultView = 'r1' | 'r2';
@@ -87,15 +92,19 @@ type ResultSection = ResultView | 'review';
   imports: [
     FormsModule,
     MatButtonModule,
+    MatCardModule,
     MatCheckboxModule,
     MatExpansionModule,
     MatFormFieldModule,
     MatInputModule,
+    MatProgressBarModule,
     MatSelectModule,
+    MatSnackBarModule,
     MatSortModule,
     MatTableModule,
     MatTabsModule,
     MatTooltipModule,
+    TranslatePipe,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -110,11 +119,16 @@ export class App {
   private readonly browserDownload = inject(BrowserDownload);
   private readonly clock = inject(SystemClock);
   private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly translate = inject(TranslateService);
   private lastFocusedElement: HTMLElement | null = null;
   private records: readonly ValidatedAbsenceRecord[] = [];
 
   protected readonly phase = signal<Phase>('idle');
-  protected readonly statusMessage = signal('Esperando un archivo sintético.');
+  protected readonly statusMessage = signal(this.translate.instant('import.waiting'));
+  protected readonly loadedFileName = signal('');
+  protected readonly importExpanded = signal(true);
+  protected readonly analysisExpanded = signal(false);
   protected readonly importErrors = signal<readonly ImportIssue[]>([]);
   protected readonly importedRowCount = signal(0);
   protected readonly candidates = signal<readonly CandidateMatch[]>([]);
@@ -139,6 +153,10 @@ export class App {
   protected readonly candidateSortColumn = signal<CandidateReviewSortColumn>('employeeId');
   protected readonly candidateSortDirection = signal<CandidateReviewSortDirection>('asc');
   protected readonly cutoffIso = signal(formatIsoDate(lastCompleteMonthCutoff(this.clock.today())));
+  protected readonly formattedCutoff = computed(() => {
+    const cutoff = parseIsoDate(this.cutoffIso());
+    return cutoff ? formatSpanishDate(cutoff) : '—';
+  });
   protected readonly busy = computed(
     () => ['reading', 'validating', 'analyzing'].includes(this.phase()) || this.exportBusy(),
   );
@@ -289,21 +307,22 @@ export class App {
     if (!file) return;
 
     this.resetResults();
+    this.loadedFileName.set('');
     this.importErrors.set([]);
 
     if (!file.name.toLocaleLowerCase().endsWith('.xlsx')) {
       this.fail([{ severity: 'error', code: 'FILE_EXTENSION_INVALID', column: 'Estructura' }]);
-      this.statusMessage.set('El archivo debe tener extensión .xlsx.');
+      this.statusMessage.set(this.translate.instant('import.invalidExtension'));
       return;
     }
 
     this.phase.set('reading');
-    this.statusMessage.set('Leyendo el libro localmente…');
+    this.statusMessage.set(this.translate.instant('import.reading'));
 
     try {
       const workbook = await this.workbookReader.read(file);
       this.phase.set('validating');
-      this.statusMessage.set('Validando estructura y filas…');
+      this.statusMessage.set(this.translate.instant('import.validating'));
       const validation = validateAbsenceWorkbook(workbook);
 
       if (validation.errors.length > 0) {
@@ -312,26 +331,29 @@ export class App {
       }
 
       this.records = validation.records;
+      this.loadedFileName.set(file.name);
       this.importedRowCount.set(validation.records.length);
       this.phase.set('ready');
       this.statusMessage.set(
-        `${validation.records.length} filas válidas. El archivo está listo para analizar.`,
+        this.translate.instant('import.ready', { count: validation.records.length }),
       );
+      this.importExpanded.set(false);
+      this.analysisExpanded.set(true);
     } catch {
       this.fail([{ severity: 'error', code: 'WORKBOOK_READ_FAILED', column: 'Estructura' }]);
-      this.statusMessage.set('No se pudo leer el libro. Revisa que sea un .xlsx compatible.');
+      this.statusMessage.set(this.translate.instant('import.readFailed'));
     }
   }
 
   protected analyze(): void {
     const cutoff = parseIsoDate(this.cutoffIso());
     if (!cutoff) {
-      this.statusMessage.set('Introduce una fecha de corte válida.');
+      this.statusMessage.set(this.translate.instant('analysis.invalidCutoff'));
       return;
     }
 
     this.phase.set('analyzing');
-    this.statusMessage.set('Aplicando las reglas R1 y R2…');
+    this.statusMessage.set(this.translate.instant('analysis.running'));
 
     const normalized = normalizeAbsenceRecords(this.records, cutoff);
     const window = recurrenceWindowFor(cutoff);
@@ -346,9 +368,18 @@ export class App {
     this.showAllR1.set(false);
     this.showAllR2.set(false);
     this.phase.set('results');
-    this.statusMessage.set(
-      `Análisis completado: ${recurrenceCandidates.length} coincidencias R1 y ${longDurationCandidates.length} candidaturas R2 para revisión humana.`,
-    );
+    this.statusMessage.set('');
+    this.analysisExpanded.set(false);
+    this.snackBar.open(this.translate.instant('analysis.completed'), undefined, { duration: 2500 });
+  }
+
+  protected chooseAnotherFile(): void {
+    this.importExpanded.set(true);
+    setTimeout(() => this.fileInput?.nativeElement.click());
+  }
+
+  protected modifyAnalysis(): void {
+    this.analysisExpanded.set(true);
   }
 
   protected selectResultView(view: ResultView): void {
@@ -470,11 +501,11 @@ export class App {
       });
       const blob = await this.reportExporter.create(report);
       this.browserDownload.save(blob, report.fileName);
-      this.statusMessage.set(
-        `Listado exportado: ${count} candidatos en ${report.sheets.length} hojas.`,
-      );
+      this.snackBar.open(this.translate.instant('export.listSuccess', { count }), undefined, {
+        duration: 3000,
+      });
     } catch {
-      this.exportError.set('No se pudo generar el Excel. Los datos permanecen en esta sesión.');
+      this.exportError.set(this.translate.instant('export.listError'));
     } finally {
       this.exportBusy.set(false);
     }
@@ -492,9 +523,11 @@ export class App {
       const report = buildCandidateDetailReport({ view, cutoff, employeeId, ...reportInput });
       const blob = await this.reportExporter.create(report);
       this.browserDownload.save(blob, report.fileName);
-      this.statusMessage.set('Ficha individual preparada con los episodios médicos pertinentes.');
+      this.snackBar.open(this.translate.instant('export.detailSuccess'), undefined, {
+        duration: 3000,
+      });
     } catch {
-      this.exportError.set('No se pudo generar la ficha. Los datos permanecen en esta sesión.');
+      this.exportError.set(this.translate.instant('export.detailError'));
     } finally {
       this.exportBusy.set(false);
     }
@@ -553,10 +586,26 @@ export class App {
     }
   }
 
+  protected requestClearSession(): void {
+    this.dialog
+      .open(ClearSessionDialogComponent, {
+        autoFocus: 'dialog',
+        restoreFocus: true,
+        maxWidth: '460px',
+      })
+      .afterClosed()
+      .subscribe((confirmed: boolean | undefined) => {
+        if (confirmed) this.clearSession();
+      });
+  }
+
   protected clearSession(): void {
     this.records = [];
     this.phase.set('idle');
-    this.statusMessage.set('Sesión eliminada. Esperando un archivo sintético.');
+    this.statusMessage.set(this.translate.instant('session.cleared'));
+    this.loadedFileName.set('');
+    this.importExpanded.set(true);
+    this.analysisExpanded.set(false);
     this.importErrors.set([]);
     this.importedRowCount.set(0);
     this.resetResults();
@@ -565,6 +614,16 @@ export class App {
       this.fileInput.nativeElement.value = '';
       this.fileInput.nativeElement.focus();
     }
+  }
+
+  protected ruleLabel(rule: 'R1' | 'R2'): string {
+    return this.translate.instant(
+      rule === 'R1' ? 'rules.shortRecurrence.label' : 'rules.longDuration.label',
+    );
+  }
+
+  protected t(key: string, params?: Record<string, unknown>): string {
+    return this.translate.instant(key, params);
   }
 
   protected formatDate(value: LocalDate | undefined): string {
@@ -646,7 +705,7 @@ export class App {
     this.importedRowCount.set(0);
     this.phase.set('error');
     this.statusMessage.set(
-      `La validación encontró ${errors.length} errores bloqueantes. No se ha ejecutado el análisis.`,
+      this.translate.instant('import.validationFailed', { count: errors.length }),
     );
   }
 
@@ -755,7 +814,9 @@ export class App {
     return {
       view,
       rule: view === 'r1' ? 'R1-v1' : 'R2-v1',
-      title: view === 'r1' ? 'Recurrencia corta' : 'Larga duración',
+      title: this.translate.instant(
+        view === 'r1' ? 'rules.shortRecurrence.label' : 'rules.longDuration.label',
+      ),
       metrics: input.details,
       episodes: input.episodes.map(({ review, outcome }) => ({
         period: `${formatSpanishDate(review.start)}–${

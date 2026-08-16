@@ -51,7 +51,7 @@ export abstract class CandidateReportExporter {
 }
 
 export function buildCandidateListReport(input: CandidateListReportInput): CandidateReport {
-  const rule = input.view === 'r1' ? 'R1-v1 — recurrencia corta' : 'R2-v1 — larga duración';
+  const rule = input.view === 'r1' ? 'Recurrencia corta' : 'Larga duración';
   const filterRows = input.filters.map((filter) => [
     `Filtro: ${reviewColumnLabel(filter.column)}`,
     safeSpreadsheetText(filter.value),
@@ -83,7 +83,7 @@ export function buildCandidateListReport(input: CandidateListReportInput): Candi
 }
 
 export function buildCandidateDetailReport(input: CandidateDetailReportInput): CandidateReport {
-  const rule = input.view === 'r1' ? 'R1-v1 — recurrencia corta' : 'R2-v1 — larga duración';
+  const rule = input.view === 'r1' ? 'Recurrencia corta' : 'Larga duración';
   const episodes = input.episodes.filter((item) => isSicknessDescription(item.review.description));
   const episodeHeaderIndex = 7 + input.details.length;
   const rows: ReportCell[][] = [
