@@ -83,6 +83,8 @@
 | D-077 | Los textos de producto se centralizan mediante `@ngx-translate/core` 18 y un catálogo español empaquetado en la aplicación, sin cargador HTTP ni selector de idioma. El MVP queda preparado para internacionalización, pero no se presenta como multilingüe.                                                   |
 | D-078 | Importación y análisis se presentan como pasos progresivos dentro de `mat-card`: el siguiente paso se habilita al completar el anterior y los pasos terminados se contraen a un resumen reabrible. El éxito del análisis se comunica de forma temporal; progreso, errores y advertencias permanecen visibles. |
 | D-079 | La acción “Eliminar sesión” pasa a “Borrar datos y empezar de nuevo” y requiere confirmación. El diálogo aclara que solo elimina datos en memoria de la aplicación, no el archivo original ni las descargas. El nombre del archivo puede mostrarse durante la sesión, pero no se registra ni persiste.         |
+| D-080 | El repositorio público se distribuye bajo licencia MIT, visible en la raíz mediante `LICENSE`. |
+| D-081 | La presentación del TFM se publica como HTML en `/slides/` mediante Reveal.js 6.0.1, empaquetado localmente en el build y sin recursos remotos. |
 
 | D-080 | GitHub Actions ejecuta `pnpm test --watch=false` y un build de producción en cada PR hacia `main` y cada integración en esa rama. GitHub Pages se publica desde el artefacto estático generado al integrar en `main` o mediante ejecución manual. El build de Pages usa la ruta base `/AbsenceLens/`. |
 ## Preguntas abiertas
