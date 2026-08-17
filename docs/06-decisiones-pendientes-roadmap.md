@@ -86,6 +86,7 @@
 | D-080 | El repositorio público se distribuye bajo licencia MIT, visible en la raíz mediante `LICENSE`. |
 | D-081 | La presentación del TFM se publica como HTML en `/slides/` mediante Reveal.js 6.0.1, empaquetado localmente en el build y sin recursos remotos. |
 
+| D-080 | GitHub Actions ejecuta `pnpm test --watch=false` y un build de producción en cada PR hacia `main` y cada integración en esa rama. GitHub Pages se publica desde el artefacto estático generado al integrar en `main` o mediante ejecución manual. El build de Pages usa la ruta base `/AbsenceLens/`. |
 ## Preguntas abiertas
 
 Estas preguntas no bloquean el primer incremento vertical si las capacidades asociadas permanecen fuera de él.
