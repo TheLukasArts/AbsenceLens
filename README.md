@@ -10,7 +10,7 @@ AbsenceLens es el Trabajo Fin de Máster del Máster de Desarrollo con IA de BIG
 |---|---|---|
 | Código fuente | [Repositorio público en GitHub](https://github.com/TheLukasArts/AbsenceLens) | Disponible |
 | Aplicación | [Abrir AbsenceLens](https://thelukasarts.github.io/AbsenceLens/) | Disponible |
-| Presentación | [Slides del proyecto](https://thelukasarts.github.io/AbsenceLens/slides) | En preparación |
+| Presentación | [Slides del proyecto](https://thelukasarts.github.io/AbsenceLens/slides/) | Disponible |
 | Vídeo de demostración | Se publicará antes de la revisión final | Pendiente de grabación |
 | Excel de ejemplo | [Descargar conjunto sintético de aceptación](samples/absence-lens-aceptacion-v1.xlsx) | Disponible |
 
@@ -203,6 +203,7 @@ Cada cambio enviado a `main` ejecuta en GitHub Actions la instalación reproduci
 .
 ├── .github/workflows/       # Integración continua y despliegue en GitHub Pages
 ├── docs/                    # Requisitos, decisiones, arquitectura y casos de aceptación
+├── public/slides/           # Presentación HTML autocontenida con Reveal.js
 ├── samples/                 # Libros Excel completamente sintéticos
 ├── src/
 │   └── app/
@@ -233,6 +234,10 @@ No subas archivos empresariales, exportaciones reales ni seudonimizaciones super
 La versión pública se publica gratuitamente en GitHub Pages:
 
 <https://thelukasarts.github.io/AbsenceLens/>
+
+La presentación del proyecto se publica en el mismo despliegue:
+
+<https://thelukasarts.github.io/AbsenceLens/slides/>
 
 El flujo de despliegue se ejecuta al actualizar la rama `main`: instala las dependencias bloqueadas, compila con la ruta base `/AbsenceLens/` y publica el artefacto estático. No requiere servidor, credenciales de usuario ni infraestructura de datos.
 
