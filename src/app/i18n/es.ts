@@ -84,6 +84,7 @@ export const ES_TRANSLATIONS: TranslationObject = {
     run: 'Ejecutar análisis',
     running: 'Aplicando las reglas de recurrencia corta y larga duración…',
     invalidCutoff: 'Introduce una fecha de corte válida.',
+    failed: 'No se ha podido completar el análisis. Revisa la fecha de corte e inténtalo de nuevo.',
     completed: 'Análisis completado',
     completedPeriod: 'Fecha de corte utilizada: {{cutoff}}',
     modify: 'Modificar análisis',
