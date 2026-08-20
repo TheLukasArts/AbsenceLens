@@ -1,0 +1,37 @@
+// Única fuente de verdad de la identidad visual de AbsenceLens.
+// Los valores se replican como propiedades personalizadas para poder usarlos
+// desde componentes que todavía no consumen los tokens del tema Material.
+
+$brand-deep: #034c5e;
+$brand-deeper: #023341;
+$brand-accent: #28bcb5;
+$brand-accent-soft: #7fd9d4;
+$brand-ink: #0e2229;
+$brand-text-secondary: #5b7078;
+$brand-text-tertiary: #8fa3aa;
+$brand-border: #dce6e8;
+$brand-surface: #f2f7f8;
+$brand-warning: #c77700;
+
+// Pila del sistema: ninguna fuente remota ni empaquetada.
+$brand-font-family:
+  system-ui,
+  -apple-system,
+  'Segoe UI',
+  Roboto,
+  'Helvetica Neue',
+  Arial,
+  sans-serif;
+
+:root {
+  --brand-deep: #{$brand-deep};
+  --brand-deeper: #{$brand-deeper};
+  --brand-accent: #{$brand-accent};
+  --brand-accent-soft: #{$brand-accent-soft};
+  --brand-ink: #{$brand-ink};
+  --brand-text-secondary: #{$brand-text-secondary};
+  --brand-text-tertiary: #{$brand-text-tertiary};
+  --brand-border: #{$brand-border};
+  --brand-surface: #{$brand-surface};
+  --brand-warning: #{$brand-warning};
+}

@@ -111,7 +111,7 @@ export interface CandidateDetailDialogData {
       margin: 0;
     }
     .dialog-heading p {
-      color: #087f8c;
+      color: #034c5e;
       font-size: 0.75rem;
       font-weight: 800;
       letter-spacing: 0.08em;
@@ -141,7 +141,7 @@ export interface CandidateDetailDialogData {
       gap: 1rem;
     }
     .section-heading span {
-      color: #087f8c;
+      color: #034c5e;
       font-weight: 800;
     }
     h3 {
@@ -160,12 +160,12 @@ export interface CandidateDetailDialogData {
       background: #f0f6f7;
     }
     dt {
-      color: #587078;
+      color: #4b6069;
       font-size: 0.78rem;
     }
     dd {
       margin: 0.2rem 0 0;
-      font-weight: 750;
+      font-weight: 700;
     }
     .episode-list {
       display: grid;
