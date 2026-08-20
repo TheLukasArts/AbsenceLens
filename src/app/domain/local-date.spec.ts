@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   addDays,
+  fromSpreadsheetDate,
   inclusiveDaysBetween,
   localDate,
   parseIsoDate,
@@ -12,6 +13,18 @@ describe('LocalDate', () => {
   it('calcula duraciones inclusivas sin depender de zona horaria', () => {
     expect(inclusiveDaysBetween(localDate(2026, 7, 1), localDate(2026, 7, 1))).toBe(1);
     expect(inclusiveDaysBetween(localDate(2026, 7, 1), localDate(2026, 7, 30))).toBe(30);
+  });
+
+  it('lee la fecha del Excel en UTC, no en la zona horaria del navegador', () => {
+    // read-excel-file entrega la celda como medianoche UTC del día real.
+    expect(fromSpreadsheetDate(new Date(Date.UTC(2026, 6, 31)))).toEqual(localDate(2026, 7, 31));
+    expect(fromSpreadsheetDate(new Date(Date.UTC(2026, 0, 1)))).toEqual(localDate(2026, 1, 1));
+  });
+
+  it('rechaza una duración con final anterior al inicio', () => {
+    expect(() => inclusiveDaysBetween(localDate(2026, 7, 10), localDate(2026, 7, 9))).toThrowError(
+      'END_BEFORE_START',
+    );
   });
 
   it('atraviesa cambios de mes, año y año bisiesto', () => {
