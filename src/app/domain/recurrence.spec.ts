@@ -30,6 +30,24 @@ describe('R1', () => {
     });
   });
 
+  it('recorta la ventana cuando el corte cae en 29 de febrero', () => {
+    expect(recurrenceWindowFor(localDate(2024, 2, 29))).toEqual({
+      start: localDate(2023, 3, 1),
+      end: localDate(2024, 2, 29),
+    });
+  });
+
+  it('mantiene ventanas de 365 días con cortes de mes de 31 días', () => {
+    expect(recurrenceWindowFor(localDate(2026, 1, 31))).toEqual({
+      start: localDate(2025, 2, 1),
+      end: localDate(2026, 1, 31),
+    });
+    expect(recurrenceWindowFor(localDate(2026, 12, 31))).toEqual({
+      start: localDate(2026, 1, 1),
+      end: localDate(2026, 12, 31),
+    });
+  });
+
   it('exige cinco episodios de hasta treinta días', () => {
     const episodes = [
       episode('000001', localDate(2026, 7, 1), 30, 'e1'),
