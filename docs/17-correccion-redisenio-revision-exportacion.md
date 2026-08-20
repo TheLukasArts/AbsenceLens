@@ -3,7 +3,8 @@
 ## Estado
 
 Especificación confirmada e implementada el 15/08/2026. La exclusión de vacaciones, la adyacencia temporal, la estructura de navegación y el modelo revisado de exportación están cerrados y cubiertos por pruebas automatizadas.
-+## Ajuste posterior confirmado
+
+## Ajuste posterior confirmado
 
 Las decisiones D-067 a D-075 sustituyen algunos patrones explorados inicialmente en este documento:
 
@@ -69,7 +70,7 @@ La ficha muestra:
 - episodios médicos descartados con su motivo cuando formen parte de la explicación;
 - botón `Exportar ficha`.
 
-Las vacaciones no aparecen en esta ficha habitual. En un incremento futuro podrá existir un bloque separado denominado `Contexto temporal`, visible solo al analizar adyacencias o coincidencias con vacaciones y festivos.
+Las vacaciones no aparecen en esta ficha habitual. En un incremento futuro podrá existir un bloque separado denominado `Contexto temporal`, visible solo al analizar adyacencias o coincidencias con vacaciones.
 
 ## Exportación recomendada
 

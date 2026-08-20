@@ -74,7 +74,6 @@ Casos de uso futuros:
 
 - Lector `.xlsx` en navegador.
 - Perfil integrado `ausencias-v1`.
-- Calendarios incluidos en recursos estáticos.
 - Exportador `.xlsx`.
 - Reloj del sistema en producción y reloj fijo en pruebas.
 

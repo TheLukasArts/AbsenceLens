@@ -23,7 +23,7 @@
 | D-017 | Top recurrente ordenado por cantidad y luego por mayor recencia.                                                                                                                                                                                                                                               |
 | D-018 | Días consecutivos de vacaciones se agrupan en un periodo.                                                                                                                                                                                                                                                      |
 | D-019 | No existen solapamientos; la adyacencia futura usa el día natural anterior/posterior.                                                                                                                                                                                                                          |
-| D-020 | Revisada por D-027 y P-008: `Ubicación - Código` identifica el centro aeroportuario y `Ambito` una zona interna; no se asumirá el estándar del código hasta confirmarlo.                                                                                                                                       |
+| D-020 | Revisada por D-027 y P-008: `Ubicación - Código` identifica el centro de trabajo y `Ambito` una zona interna; no se asumirá el estándar del código hasta confirmarlo.                                                                                                                                       |
 | D-021 | Permitir filtrar y ordenar por todas las columnas importadas.                                                                                                                                                                                                                                                  |
 | D-022 | Ignorar la duración calculada por el sistema de origen y recalcularla.                                                                                                                                                                                                                                         |
 | D-023 | Exportación de resultados en Excel.                                                                                                                                                                                                                                                                            |
@@ -85,8 +85,15 @@
 | D-079 | La acción “Eliminar sesión” pasa a “Borrar datos y empezar de nuevo” y requiere confirmación. El diálogo aclara que solo elimina datos en memoria de la aplicación, no el archivo original ni las descargas. El nombre del archivo puede mostrarse durante la sesión, pero no se registra ni persiste.         |
 | D-080 | El repositorio público se distribuye bajo licencia MIT, visible en la raíz mediante `LICENSE`. |
 | D-081 | La presentación del TFM se publica como HTML en `/slides/` mediante Reveal.js 6.0.1, empaquetado localmente en el build y sin recursos remotos. |
-
-| D-080 | GitHub Actions ejecuta `pnpm test --watch=false` y un build de producción en cada PR hacia `main` y cada integración en esa rama. GitHub Pages se publica desde el artefacto estático generado al integrar en `main` o mediante ejecución manual. El build de Pages usa la ruta base `/AbsenceLens/`. |
+| D-082 | GitHub Actions ejecuta `pnpm test --watch=false` y un build de producción en cada PR hacia `main` y cada integración en esa rama. GitHub Pages se publica desde el artefacto estático generado al integrar en `main` o mediante ejecución manual. El build de Pages usa la ruta base `/AbsenceLens/`. |
+| D-083 | `AbsenceLens` queda fijado como nombre definitivo. Se retiran de la documentación las alternativas consideradas y la comprobación de marcas pendiente. Sustituye la redacción ambigua de D-001. |
+| D-084 | Los festivos quedan fuera del alcance de forma permanente. La persona usuaria confirma que la plantilla analizada trabaja a turnos los 365 días del año y las 24 horas, por lo que un festivo puede ser laborable para cualquier empleado y no aporta información a ninguna regla. Se retiran del roadmap la adyacencia a festivos, los calendarios laborales y la tabla de centro a comunidad autónoma y municipio. Consecuencia: el análisis no requiere ninguna fuente de datos externa al archivo importado. Supersede la parte de D-064 relativa a festivos. |
+| D-085 | La paleta de marca queda fijada en `#034C5E` como color base y `#28BCB5` como acento, con blancos, negros y grises de apoyo. Las paletas tonales Material 3 se generan a partir de esos valores y se centralizan en `src/theme/`. Cierra P-012. |
+| D-086 | La tipografía usa exclusivamente la pila de fuentes del sistema. Se retira `Inter`, que se declaraba sin cargarse en ningún sitio, para no introducir fuentes remotas ni empaquetadas. |
+| D-087 | El contexto documental se redacta sin identificar a ninguna organización ni sector. El problema se enuncia como general de cualquier entorno que analice ausencias sobre exportaciones en hoja de cálculo, y la aplicación como herramienta de uso individual no integrada en ningún sistema corporativo. |
+| D-088 | La URL de entrega del vídeo es una ruta propia y estable del despliegue, `/AbsenceLens/video/`, en lugar de un enlace directo a una plataforma. Permite publicar la dirección definitiva antes de disponer del vídeo y cambiar después su destino sin alterar la entrega. |
+| D-089 | El archivo de ejemplo se ofrece dentro de la aplicación como enlace de descarga a un asset propio. Se descarta un botón de carga automática mediante `fetch`: contradiría ADR-0001 y rompería la garantía de que la aplicación no realiza peticiones de red relacionadas con los datos. |
+| D-090 | Se incorpora la carga por arrastrar y soltar como complemento del selector de archivo, manteniendo el selector nativo como camino principal y accesible por teclado. Cierra M-006. |
 ## Preguntas abiertas
 
 Estas preguntas no bloquean el primer incremento vertical si las capacidades asociadas permanecen fuera de él.
@@ -95,10 +102,9 @@ Estas preguntas no bloquean el primer incremento vertical si las capacidades aso
 | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
 | P-001 | ¿Cuál era la fórmula exacta del porcentaje de absentismo, especialmente su denominador?                                                                                                               | Usuario interesado |
 | P-006 | ¿Qué columnas exactas debe contener cada exportación de resultados y en qué orden?                                                                                                                    | Usuario interesado |
-| P-008 | ¿Los códigos de `Ubicación - Código` son identificadores IATA, códigos internos o un inventario mixto? Debe confirmarse antes de construir la futura tabla de centro, comunidad autónoma y municipio. | Usuario interesado |
+| P-008 | ¿Los códigos de `Ubicación - Código` son identificadores estándar, códigos internos o un inventario mixto? Afecta solo a la presentación y al filtro por centro de Larga duración. | Usuario interesado |
 | P-010 | ¿La sección equivalente a “limitaciones” debe formar parte de AbsenceLens? No existe una columna ni una regla asociada en el alcance actual.                                                          | Usuario interesado |
 | P-011 | Para cubrir el dashboard de tasa, ¿se proporcionará una fuente autorizada de horas netas/trabajadas y la fórmula, o se sustituirá por métricas derivables del Excel de ausencias?                     | Usuario interesado |
-| P-012 | ¿Cuáles son los valores exactos de la paleta de marca, preferiblemente en hexadecimal, y sus usos previstos?                                                                                          | Usuario interesado |
 
 ## Preguntas para gráficos
 
@@ -116,8 +122,6 @@ Estas preguntas no bloquean el primer incremento vertical si las capacidades aso
 
 - Recreaciones sintéticas de los dos dashboards anteriores.
 - Lista de códigos de centro realmente necesarios y confirmación de su estándar.
-- Tabla de código de centro a comunidad autónoma y municipio, después de confirmar el estándar.
-- Calendarios nacionales, autonómicos y locales para los años soportados.
 - Archivo sintético de aproximadamente 15.000 filas para rendimiento.
 
 ## Decisiones técnicas todavía reversibles
@@ -127,7 +131,6 @@ Estas preguntas no bloquean el primer incremento vertical si las capacidades aso
 - Librería de gráficos.
 - Gestión de estado en Angular.
 - Estrategia de PWA/offline.
-- Fuente y formato de calendarios festivos.
 - Ubicación de iconos, tooltips y ayuda contextual.
 
 ## Mejoras diferidas tras I-001
@@ -145,13 +148,12 @@ Estas preguntas no bloquean el primer incremento vertical si las capacidades aso
 ## Roadmap posterior al MVP
 
 1. Coincidencias adyacentes a vacaciones.
-2. Coincidencias con festivos nacionales, autonómicos y locales.
-3. Más estadísticas agregadas.
-4. PWA y ejecución offline instalada.
-5. Perfiles de importación externos.
-6. Editor visual y almacenamiento de perfiles.
-7. Compatibilidad con distintos formatos de Excel.
-8. Posible proceso complementario de seudonimización bajo control de la organización.
+2. Más estadísticas agregadas.
+3. PWA y ejecución offline instalada.
+4. Perfiles de importación externos.
+5. Editor visual y almacenamiento de perfiles.
+6. Compatibilidad con distintos formatos de Excel.
+7. Posible proceso complementario de seudonimización bajo control de la organización.
 
 No incluir predicción, puntuación individual, fraude, recomendaciones laborales o investigación automática en el roadmap funcional del producto.
 
