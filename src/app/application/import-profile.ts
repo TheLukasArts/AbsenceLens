@@ -104,6 +104,8 @@ export function validateAbsenceWorkbook(workbook: WorkbookData): WorkbookValidat
     const end = parseDateCell(row[4]);
     const description = parseDescription(row[5]);
 
+    const errorsBeforeRow = errors.length;
+
     if (isEmpty(row[0])) {
       errors.push(error(sourceRow, 'Nº Nómina', 'REQUIRED_VALUE_MISSING'));
     } else if (employeeId === null) {
@@ -132,7 +134,7 @@ export function validateAbsenceWorkbook(workbook: WorkbookData): WorkbookValidat
       errors.push(error(sourceRow, 'Fecha Fin Ausencia', 'END_BEFORE_START'));
     }
 
-    const rowHasErrors = errors.some((issue) => issue.row === sourceRow);
+    const rowHasErrors = errors.length > errorsBeforeRow;
     if (
       !rowHasErrors &&
       employeeId !== null &&
@@ -163,7 +165,13 @@ export function validateAbsenceWorkbook(workbook: WorkbookData): WorkbookValidat
 }
 
 function validateHeaders(header: readonly WorkbookCell[]): ImportIssue[] {
-  const actual = header.map((cell) => (typeof cell === 'string' ? cell : ''));
+  const trimmed = header.map((cell) => (typeof cell === 'string' ? cell.trim() : ''));
+  // Muchos exportadores dejan columnas vacías a la derecha de la última cabecera real.
+  let lastFilled = trimmed.length - 1;
+  while (lastFilled >= 0 && trimmed[lastFilled] === '') {
+    lastFilled -= 1;
+  }
+  const actual = trimmed.slice(0, lastFilled + 1);
   const issues: ImportIssue[] = [];
 
   for (const expected of EXPECTED_HEADERS) {
@@ -180,7 +188,8 @@ function validateHeaders(header: readonly WorkbookCell[]): ImportIssue[] {
       issues.push({
         severity: 'error',
         code: 'HEADER_ADDITIONAL',
-        column: EXPECTED_HEADERS[index] ?? 'Estructura',
+        column: 'Estructura',
+        row: index + 1,
       });
     }
   });
