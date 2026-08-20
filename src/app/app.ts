@@ -153,6 +153,7 @@ export class App {
   protected readonly candidateSortColumn = signal<CandidateReviewSortColumn>('employeeId');
   protected readonly candidateSortDirection = signal<CandidateReviewSortDirection>('asc');
   protected readonly cutoffIso = signal(formatIsoDate(lastCompleteMonthCutoff(this.clock.today())));
+  protected readonly maxCutoffIso = formatIsoDate(this.clock.today());
   protected readonly formattedCutoff = computed(() => {
     const cutoff = parseIsoDate(this.cutoffIso());
     return cutoff ? formatSpanishDate(cutoff) : '—';
@@ -355,22 +356,31 @@ export class App {
     this.phase.set('analyzing');
     this.statusMessage.set(this.translate.instant('analysis.running'));
 
-    const normalized = normalizeAbsenceRecords(this.records, cutoff);
-    const window = recurrenceWindowFor(cutoff);
-    this.analysisWarnings.set(summarizeAnalysisAdjustments(normalized.episodes, window));
+    try {
+      const normalized = normalizeAbsenceRecords(this.records, cutoff);
+      const window = recurrenceWindowFor(cutoff);
+      this.analysisWarnings.set(summarizeAnalysisAdjustments(normalized.episodes, window));
 
-    const recurrenceCandidates = findShortDurationRecurrences(normalized.episodes, cutoff);
-    const longDurationCandidates = buildLongDurationCandidates(normalized.episodes, cutoff);
-    this.candidates.set(recurrenceCandidates);
-    this.longCandidates.set(longDurationCandidates);
-    this.reviewRows.set(buildReviewRows(this.records, normalized.episodes));
-    this.selectedCentres.set([]);
-    this.showAllR1.set(false);
-    this.showAllR2.set(false);
-    this.phase.set('results');
-    this.statusMessage.set('');
-    this.analysisExpanded.set(false);
-    this.snackBar.open(this.translate.instant('analysis.completed'), undefined, { duration: 2500 });
+      const recurrenceCandidates = findShortDurationRecurrences(normalized.episodes, cutoff);
+      const longDurationCandidates = buildLongDurationCandidates(normalized.episodes, cutoff);
+      this.candidates.set(recurrenceCandidates);
+      this.longCandidates.set(longDurationCandidates);
+      this.reviewRows.set(buildReviewRows(this.records, normalized.episodes));
+      this.selectedCentres.set([]);
+      this.showAllR1.set(false);
+      this.showAllR2.set(false);
+      this.phase.set('results');
+      this.statusMessage.set('');
+      this.analysisExpanded.set(false);
+      this.snackBar.open(this.translate.instant('analysis.completed'), undefined, {
+        duration: 2500,
+      });
+    } catch {
+      this.resetResults();
+      this.phase.set('ready');
+      this.analysisExpanded.set(true);
+      this.statusMessage.set(this.translate.instant('analysis.failed'));
+    }
   }
 
   protected chooseAnotherFile(): void {

@@ -184,6 +184,7 @@
                 type="date"
                 [ngModel]="cutoffIso()"
                 (ngModelChange)="cutoffIso.set($event)"
+                [max]="maxCutoffIso"
                 [disabled]="busy()"
               />
             </label>
@@ -290,7 +291,7 @@
           </mat-expansion-panel>
         }
         @if (resultSection() === 'r1') {
-          <div id="panel-r1" role="tabpanel" aria-labelledby="tab-r1">
+          <div id="panel-r1">
             <div class="panel-toolbar">
               <p>
                 {{
@@ -374,7 +375,7 @@
             }
           </div>
         } @else if (resultSection() === 'r2') {
-          <div id="panel-r2" role="tabpanel" aria-labelledby="tab-r2">
+          <div id="panel-r2">
             <fieldset class="centre-filter">
               <legend>{{ 'results.representativeCentreFilter' | translate }}</legend>
               <div class="centre-filter-row">

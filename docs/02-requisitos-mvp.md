@@ -77,7 +77,6 @@
 - Ejecución offline/PWA.
 - Estadísticas adicionales.
 - Coincidencias de ausencias adyacentes a vacaciones.
-- Coincidencias con festivos nacionales, autonómicos y locales.
 
 ## Fuera del MVP
 
@@ -88,7 +87,7 @@
 - Recomendaciones laborales o disciplinarias.
 - Login, usuarios, roles o permisos internos de la aplicación.
 - Backend, base de datos, subida de archivos o almacenamiento remoto.
-- Integración con sistemas de RR. HH. o Power BI.
+- Integración con sistemas de gestión de personas o plataformas de cuadros de mando.
 - Soporte móvil o tableta.
 - Importación incremental o combinación histórica de sesiones.
 - Interpretación arbitraria de cualquier Excel.

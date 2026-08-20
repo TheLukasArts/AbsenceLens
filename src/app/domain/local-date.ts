@@ -86,8 +86,9 @@ export function parseSpanishShortDate(value: string): LocalDate | null {
   return match ? tryLocalDate(Number(match[3]), Number(match[2]), Number(match[1])) : null;
 }
 
+// La librería de lectura construye la fecha del Excel en UTC+0, así que hay que leerla en UTC.
 export function fromSpreadsheetDate(value: Date): LocalDate | null {
-  return tryLocalDate(value.getFullYear(), value.getMonth() + 1, value.getDate());
+  return tryLocalDate(value.getUTCFullYear(), value.getUTCMonth() + 1, value.getUTCDate());
 }
 
 function tryLocalDate(year: number, month: number, day: number): LocalDate | null {

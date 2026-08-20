@@ -11,10 +11,10 @@ AbsenceLens es el Trabajo Fin de Máster del Máster de Desarrollo con IA de BIG
 | Código fuente | [Repositorio público en GitHub](https://github.com/TheLukasArts/AbsenceLens) | Disponible |
 | Aplicación | [Abrir AbsenceLens](https://thelukasarts.github.io/AbsenceLens/) | Disponible |
 | Presentación | [Slides del proyecto](https://thelukasarts.github.io/AbsenceLens/slides/) | Disponible |
-| Vídeo de demostración | Se publicará antes de la revisión final | Pendiente de grabación |
-| Excel de ejemplo | [Descargar conjunto sintético de aceptación](samples/absence-lens-aceptacion-v1.xlsx) | Disponible |
+| Vídeo de demostración | [Vídeo del proyecto](https://thelukasarts.github.io/AbsenceLens/video/) | Publicación en curso |
+| Excel de ejemplo | [Descargar conjunto sintético de aceptación](https://github.com/TheLukasArts/AbsenceLens/raw/main/samples/absence-lens-aceptacion-v1.xlsx) | Disponible |
 
-> **Aviso para la entrega:** antes de enviar el formulario del TFM, sustituye el estado del vídeo por su URL pública definitiva. El proyecto no tiene inicio de sesión, por lo que no requiere usuario ni contraseña de prueba.
+> El proyecto no tiene inicio de sesión, por lo que no requiere usuario ni contraseña de prueba.
 
 ## Índice
 
@@ -51,7 +51,7 @@ La aplicación no determina si una ausencia está justificada, no clasifica a la
 Puedes probar la aplicación sin instalar nada:
 
 1. Abre [la versión desplegada](https://thelukasarts.github.io/AbsenceLens/).
-2. Descarga el [Excel sintético de ejemplo](samples/absence-lens-aceptacion-v1.xlsx).
+2. Descarga el [Excel sintético de ejemplo](https://github.com/TheLukasArts/AbsenceLens/raw/main/samples/absence-lens-aceptacion-v1.xlsx).
 3. Selecciónalo desde la pantalla de importación.
 4. Mantén la fecha de corte de referencia `31/07/2026` para reproducir los resultados documentados.
 5. Ejecuta el análisis y consulta las vistas de recurrencia, larga duración y revisión.
@@ -265,7 +265,6 @@ El producto actual se centra en importación, análisis explicable de R1 y R2, r
 Entre las líneas de evolución documentadas se encuentran:
 
 - coincidencias adyacentes a vacaciones;
-- calendarios de festivos nacionales, autonómicos y locales con tablas maestras confirmadas;
 - métricas y gráficos agregados, únicamente cuando exista una fórmula y una fuente de datos autorizadas;
 - mejoras de rendimiento, PWA y ejecución offline;
 - perfiles de importación adicionales.

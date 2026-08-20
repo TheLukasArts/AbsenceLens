@@ -23,7 +23,7 @@ Estas soluciones centralizan datos, usuarios, solicitudes, fichajes y analítica
 
 - Appsentia: https://www.appsentia.com/
 
-Detecta patrones como lunes/viernes y proximidad a festivos, pero está orientada al entorno sudafricano e incorpora puntuaciones individuales de riesgo y recomendaciones. AbsenceLens se diferencia mediante reglas neutrales y explicables, procesamiento local, calendarios españoles, ausencia de scoring y orientación a revisión humana.
+Detecta patrones como lunes/viernes y proximidad a festivos, pero está orientada al entorno sudafricano e incorpora puntuaciones individuales de riesgo y recomendaciones. AbsenceLens se diferencia mediante reglas neutrales y explicables, procesamiento local sin fuentes externas, ausencia de scoring y orientación a revisión humana.
 
 ### Open source relacionado
 
@@ -34,7 +34,7 @@ Se centran en gestión de permisos, usuarios, calendarios y aprobaciones, no en 
 
 ### Herramientas generalistas
 
-Power Query, Power BI y plantillas Excel pueden construir análisis equivalentes, pero requieren preparar modelos, fórmulas y paneles. AbsenceLens encapsula las reglas concretas para el periodo transitorio y reduce el trabajo manual del usuario.
+Power Query, Power BI y plantillas Excel pueden construir análisis equivalentes, pero requieren preparar modelos, fórmulas y paneles. AbsenceLens encapsula las reglas concretas y reduce el trabajo manual de la persona usuaria sin necesidad de montar ni mantener un modelo.
 
 ## Protección de datos y ámbito laboral
 
@@ -48,19 +48,18 @@ Power Query, Power BI y plantillas Excel pueden construir análisis equivalentes
 
 Estas referencias sirven para justificar minimización, seudonimización, seguridad, explicabilidad y ausencia de decisiones automatizadas. No sustituyen la evaluación jurídica de un uso empresarial real.
 
-## Calendarios laborales
+## Calendarios laborales: línea de investigación descartada
 
 - Resolución del BOE sobre fiestas laborales de 2026: https://www.boe.es/eli/es/res/2025/10/17/%282%29
 - Portal oficial de calendarios laborales: https://administracion.gob.es/pag_Home/atencionCiudadana/calendarios/laboral.html?idioma=es
 
-El calendario laboral español puede incluir fiestas nacionales, autonómicas y dos locales. La comunidad autónoma no basta para resolver festivos locales; se necesita municipio. Para el MVP se limitará el conjunto a los centros realmente necesarios y se mantendrá una tabla maestra revisable cuando se haya confirmado el estándar de los códigos de centro.
+El calendario laboral español puede incluir fiestas nacionales, autonómicas y dos locales. La comunidad autónoma no basta para resolver festivos locales; se necesita municipio, lo que obligaba a mantener una tabla maestra de centros y un calendario por año.
 
-## Códigos de centros aeroportuarios
+La validación con la persona usuaria descartó esta línea: la plantilla analizada trabaja a turnos los 365 días del año y las 24 horas, de modo que un festivo puede ser laborable para cualquier empleado y no aporta información a ninguna regla. La investigación se conserva como registro de la decisión.
 
-- IATA, códigos y buscador oficial: https://www.iata.org/en/services/codes/
-- OACI, designadores e indicadores: https://www.icao.int/operational-safety/Designators-and-indicators
+## Códigos de centro
 
-IATA utiliza identificadores de ubicación de tres caracteres. OACI publica indicadores de ubicación de cuatro letras y puede relacionarlos con identificadores IATA de tres caracteres. Por tanto, no se etiquetará el inventario de `Ubicación - Código` como OACI hasta que el usuario confirme el estándar exacto; para el MVP los valores se tratan como etiquetas opacas de centro.
+El inventario de `Ubicación - Código` puede responder a un estándar sectorial o a una codificación interna. Mientras el estándar no se confirme (P-008), los valores se tratan como etiquetas opacas de centro: se muestran, se filtran y se exportan literalmente, sin interpretarlos ni enriquecerlos.
 
 ## Tecnología investigada
 

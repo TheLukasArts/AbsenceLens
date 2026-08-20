@@ -16,7 +16,7 @@ Las vacaciones aparecen con una fila por día. Los días consecutivos del mismo 
 
 ### Centro y ámbito
 
-- `Ubicación - Código` identifica el centro aeroportuario; el estándar exacto del código está pendiente de confirmar.
+- `Ubicación - Código` identifica el centro de trabajo; el estándar exacto del código está pendiente de confirmar.
 - La cabecera de origen `Ambito` representa la sección o zona de trabajo dentro del centro.
 - El centro registrado corresponde al momento de la ausencia. Los cambios de centro son excepcionales.
 
@@ -77,12 +77,11 @@ Número de días de intersección entre el episodio y el periodo analizado. No c
 - Existe adyacencia posterior si la baja comienza el día natural inmediatamente posterior al final de vacaciones.
 - No buscar solapamientos porque la fuente garantiza que no existen.
 
-## Regla futura: adyacencia a festivos
+## Festivos: fuera de alcance
 
-- Comparar inicio y final del episodio con el día natural inmediatamente anterior o posterior a festivos.
-- Incluir festivos nacionales, autonómicos y locales.
-- Obtener comunidad autónoma y municipio desde una tabla maestra de códigos de centro, una vez confirmado su estándar.
-- Avisar cuando un código no disponga de calendario; no producir una coincidencia silenciosamente incompleta.
+La plantilla analizada trabaja a turnos los 365 días del año y las 24 horas, de modo que un día festivo puede ser laborable para cualquier empleado. Los festivos no aportan información a ninguna regla y quedan excluidos de forma permanente.
+
+En consecuencia, el análisis no necesita calendarios laborales, ni tablas maestras de centros, ni ninguna otra fuente de datos externa al archivo importado.
 
 ## Principios de explicación
 

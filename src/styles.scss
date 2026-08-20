@@ -1,13 +1,15 @@
 @use '@angular/material' as mat;
+@use './theme/brand' as brand;
+@use './theme/theme-colors' as brand-palettes;
 
 html {
   @include mat.theme(
     (
       color: (
-        primary: mat.$cyan-palette,
-        tertiary: mat.$orange-palette,
+        primary: brand-palettes.$primary-palette,
+        tertiary: brand-palettes.$tertiary-palette,
       ),
-      typography: Aptos,
+      typography: brand.$brand-font-family,
       density: 0,
     )
   );
@@ -17,8 +19,8 @@ html {
 html {
   min-width: 320px;
   min-height: 100%;
-  background: #f3f7f8;
-  font-family: Inter, Aptos, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: brand.$brand-surface;
+  font-family: brand.$brand-font-family;
 }
 
 body {

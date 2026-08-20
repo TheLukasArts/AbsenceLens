@@ -30,7 +30,7 @@
 | Fijo/Temporal | Perfil agregado, filtro y exportación |
 | Plan Salarial - Desc. | Mostrar, filtrar, ordenar y exportar |
 | Sexo | Perfil agregado, filtro y exportación |
-| Ubicación - Código | Código del centro aeroportuario; filtro, calendario y exportación; estándar exacto pendiente de confirmar |
+| Ubicación - Código | Código del centro de trabajo; filtro y exportación; estándar exacto pendiente de confirmar |
 | Número de Días de Ausencia a Fecha de hoy | Descartar el valor de origen; no filtrar, ordenar ni exportar ese valor y sustituirlo por cálculos internos cuando proceda |
 
 Mantener exactamente la grafía real de las cabeceras en el perfil de importación y mapearla a nombres internos neutrales. La cabecera confirmada es `Ambito`, sin tilde. El identificador de nómina no debe convertirse a número ni perder su representación con ceros a la izquierda.
@@ -39,7 +39,7 @@ La cabecera exacta confirmada es `Convenio Laboral`. En la captura aparecía com
 
 ## Perfil de importación inicial
 
-La primera versión contendrá un único perfil integrado y versionado, provisionalmente `ausencias-v1`. El lector físico del libro estará separado del perfil que mapea hoja, cabeceras, tipos y transformaciones.
+La primera versión contiene un único perfil integrado y versionado, `ausencias-v1`. El lector físico del libro está separado del perfil que mapea hoja, cabeceras, tipos y transformaciones.
 
 El roadmap contempla:
 
@@ -96,7 +96,6 @@ Aunque la fuente declare todas las filas válidas, el importador debe detectar:
 - fin anterior a inicio;
 - identificador de nómina vacío;
 - descripción desconocida;
-- ubicación sin mapeo cuando se ejecuten reglas de festivos;
 - filas fuera de la fecha de corte;
 - inicio posterior a la fecha de corte, que se omite con advertencia;
 - final posterior a la fecha de corte, que se recorta para el análisis conservando el valor original en el detalle;

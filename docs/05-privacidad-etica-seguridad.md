@@ -32,7 +32,7 @@ El número de nómina permite que una persona autorizada identifique al empleado
 - Sin backend, subida de archivos o base de datos remota.
 - Sin IA en tiempo de ejecución.
 - Sin telemetría, analítica, fuentes remotas ni envío de errores con contenido.
-- Calendarios y tablas maestras incluidos localmente cuando sea posible.
+- Sin fuentes de datos externas: el análisis solo utiliza el archivo importado.
 - Botón para eliminar la sesión.
 - No registrar nombre del archivo, identificadores, filas ni valores personales.
 - Mensajes de error saneados.
@@ -57,7 +57,7 @@ El motor de reglas utilizará únicamente identificador, fechas, descripción y 
 - Mostrar reglas y umbrales.
 - Explicar episodios incluidos y excluidos.
 - Diferenciar duración total de días dentro del periodo.
-- Indicar datos incompletos o calendarios no disponibles.
+- Indicar datos incompletos.
 - Evitar colores, iconos y términos que impliquen culpabilidad.
 - Mantener siempre la decisión humana.
 
