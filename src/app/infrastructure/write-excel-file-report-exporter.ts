@@ -40,11 +40,11 @@ function styledSheet(
 }
 
 function columnWidths(rows: readonly (readonly ReportCell[])[]): { width: number }[] {
-  const columnCount = Math.max(0, ...rows.map((row) => row.length));
+  const columnCount = rows.reduce((widest, row) => Math.max(widest, row.length), 0);
   return Array.from({ length: columnCount }, (_, columnIndex) => {
-    const contentWidth = Math.max(
+    const contentWidth = rows.reduce(
+      (widest, row) => Math.max(widest, String(row[columnIndex] ?? '').length + 2),
       10,
-      ...rows.map((row) => String(row[columnIndex] ?? '').length + 2),
     );
     return { width: Math.min(contentWidth, 42) };
   });

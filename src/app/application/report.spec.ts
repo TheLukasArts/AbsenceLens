@@ -56,6 +56,13 @@ describe('candidate report', () => {
     );
     expect(safeSpreadsheetText('MAD')).toBe('MAD');
   });
+
+  it('neutraliza fórmulas precedidas de espacio en blanco', () => {
+    expect(safeSpreadsheetText('\t=1+1')).toBe("'=1+1");
+    expect(safeSpreadsheetText('\r@SUM(A1)')).toBe("'@SUM(A1)");
+    expect(safeSpreadsheetText('  +1')).toBe("'+1");
+    expect(safeSpreadsheetText('  -1')).toBe("'-1");
+  });
 });
 
 const reviewRow: ReviewRow = {
