@@ -1,15 +1,19 @@
 :host {
-  --deep: #004f61;
-  --deeper: #003c4a;
-  --aqua: #2fc3c7;
+  --deep: #034c5e;
+  --deeper: #023341;
+  --aqua: #28bcb5;
   --mist: #a6bec5;
   --ice: #e9f1f3;
-  --ink: #172b33;
-  --muted: #5d7179;
+  --ink: #0e2229;
+  --muted: #5b7078;
+  --line: #dce6e8;
+  --surface: #ffffff;
+  --brand: var(--aqua);
+  --brand-deep: var(--deep);
   display: block;
   min-height: 100vh;
   color: var(--ink);
-  background: #f3f7f8;
+  background: #f2f7f8;
 }
 
 * {
@@ -30,10 +34,15 @@ button,
 
 button:focus-visible,
 input:focus-visible,
-.file-drop:has(input:focus-visible),
-summary:focus-visible {
-  outline: 3px solid #ffbf47;
+a:focus-visible,
+.file-drop:focus-within {
+  outline: 3px solid var(--deep);
   outline-offset: 3px;
+}
+
+.topbar a:focus-visible,
+.topbar button:focus-visible {
+  outline-color: var(--aqua);
 }
 
 .topbar {
