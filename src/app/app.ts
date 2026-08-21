@@ -154,6 +154,8 @@ export class App {
   protected readonly candidateSortDirection = signal<CandidateReviewSortDirection>('asc');
   protected readonly cutoffIso = signal(formatIsoDate(lastCompleteMonthCutoff(this.clock.today())));
   protected readonly maxCutoffIso = formatIsoDate(this.clock.today());
+  protected readonly importDuration = signal('');
+  protected readonly analysisDuration = signal('');
   protected readonly formattedCutoff = computed(() => {
     const cutoff = parseIsoDate(this.cutoffIso());
     return cutoff ? formatSpanishDate(cutoff) : '—';
@@ -319,6 +321,7 @@ export class App {
 
     this.phase.set('reading');
     this.statusMessage.set(this.translate.instant('import.reading'));
+    const startedAt = performance.now();
 
     try {
       const workbook = await this.workbookReader.read(file);
@@ -334,9 +337,13 @@ export class App {
       this.records = validation.records;
       this.loadedFileName.set(file.name);
       this.importedRowCount.set(validation.records.length);
+      this.importDuration.set(elapsedSecondsSince(startedAt));
       this.phase.set('ready');
       this.statusMessage.set(
-        this.translate.instant('import.ready', { count: validation.records.length }),
+        this.translate.instant('import.ready', {
+          count: validation.records.length,
+          seconds: this.importDuration(),
+        }),
       );
       this.importExpanded.set(false);
       this.analysisExpanded.set(true);
@@ -355,6 +362,7 @@ export class App {
 
     this.phase.set('analyzing');
     this.statusMessage.set(this.translate.instant('analysis.running'));
+    const startedAt = performance.now();
 
     try {
       const normalized = normalizeAbsenceRecords(this.records, cutoff);
@@ -369,12 +377,15 @@ export class App {
       this.selectedCentres.set([]);
       this.showAllR1.set(false);
       this.showAllR2.set(false);
+      this.analysisDuration.set(elapsedSecondsSince(startedAt));
       this.phase.set('results');
       this.statusMessage.set('');
       this.analysisExpanded.set(false);
-      this.snackBar.open(this.translate.instant('analysis.completed'), undefined, {
-        duration: 2500,
-      });
+      this.snackBar.open(
+        this.translate.instant('analysis.completed', { seconds: this.analysisDuration() }),
+        undefined,
+        { duration: 2500 },
+      );
     } catch {
       this.resetResults();
       this.phase.set('ready');
@@ -860,5 +871,11 @@ export class App {
     this.reviewSortColumn.set('start');
     this.reviewSortDirection.set('asc');
     this.exportError.set('');
+    this.analysisDuration.set('');
   }
+}
+
+// Solo se conserva la duración: ningún dato del archivo interviene en la medición.
+function elapsedSecondsSince(startedAt: number): string {
+  return ((performance.now() - startedAt) / 1000).toFixed(1);
 }
