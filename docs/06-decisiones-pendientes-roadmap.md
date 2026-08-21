@@ -122,7 +122,7 @@ Estas preguntas no bloquean el primer incremento vertical si las capacidades aso
 
 - Recreaciones sintéticas de los dos dashboards anteriores.
 - Lista de códigos de centro realmente necesarios y confirmación de su estándar.
-- Archivo sintético de aproximadamente 15.000 filas para rendimiento.
+- Archivo sintético de aproximadamente 150.000 filas para rendimiento.
 
 ## Decisiones técnicas todavía reversibles
 

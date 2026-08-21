@@ -80,7 +80,7 @@ Casos de uso futuros:
 ## Estado y rendimiento
 
 - El archivo completo sustituye la sesión anterior.
-- No se necesita base de datos para 15.000 filas.
+- No se necesita base de datos para 150.000 filas.
 - Medir primero antes de introducir Web Worker.
 - Si la lectura o cálculo bloquea perceptiblemente la UI, mover importación y reglas puras a un Worker.
 - No persistir filas en `localStorage` o `IndexedDB` en el MVP.
@@ -131,7 +131,7 @@ Casos de uso futuros:
 
 ### Rendimiento
 
-- Libro sintético de aproximadamente 15.000 filas y tamaño representativo.
+- Libro sintético de aproximadamente 150.000 filas y tamaño representativo.
 - Tiempo de importación, normalización, cálculo, filtrado y exportación.
 - Verificación de que la interfaz mantiene respuesta suficiente en portátil.
 
@@ -147,7 +147,7 @@ Casos de uso futuros:
 ## Demostración propuesta, menos de cinco minutos
 
 1. Presentar el problema y la garantía de procesamiento local.
-2. Cargar un Excel sintético de aproximadamente 15.000 filas.
+2. Cargar un Excel sintético de aproximadamente 150.000 filas.
 3. Mostrar validación, fecha de corte y resumen de importación.
 4. Abrir recurrentes de corta duración y explicar una coincidencia.
 5. Abrir larga duración, mostrar el top global y filtrar uno o varios centros.

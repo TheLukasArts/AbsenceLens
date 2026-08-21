@@ -106,7 +106,7 @@
 
 ## Requisitos no funcionales iniciales
 
-- Procesar al menos 15.000 filas y un archivo de 8,4 MB con fluidez en un portátil convencional.
+- Procesar al menos 150.000 filas con fluidez en un portátil convencional.
 - No bloquear la interfaz durante operaciones perceptibles; evaluar Web Worker si la medición lo justifica.
 - Funcionamiento en navegadores modernos sobre Windows 11.
 - Sin peticiones de red provocadas por la importación, análisis, filtrado o exportación.
