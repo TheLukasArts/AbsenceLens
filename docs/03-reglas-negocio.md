@@ -41,6 +41,8 @@ Número de días naturales incluidos entre inicio y final efectivo:
 
 Número de días de intersección entre el episodio y el periodo analizado. No cambia la clasificación corta o larga del episodio.
 
+> No implementado en el alcance actual. La aplicación trabaja con una única fecha de corte, no con un periodo independiente, de modo que no distingue entre duración total y días visibles dentro de un intervalo. Queda como concepto preparado para cuando exista un periodo de análisis configurable.
+
 ## Regla R1: recurrencia de corta duración
 
 - Solo participan episodios de baja laboral; `Vacaciones` queda excluida del cálculo, del listado y del detalle operativo habitual.
@@ -53,21 +55,27 @@ Número de días de intersección entre el episodio y el periodo analizado. No c
   1. número de episodios descendente;
   2. fecha de inicio del episodio más reciente descendente;
   3. identificador de empleado ascendente como criterio técnico estable, salvo que el usuario defina otro.
+- El «episodio más reciente» del criterio de ordenación es el más reciente **entre los contabilizados**. Un episodio descartado no altera la posición del candidato.
 - Debe mostrarse la ventana que produjo la coincidencia y los episodios contabilizados.
+- Los episodios duplicados o solapados de un mismo empleado **no se detectan**: cada fila cuenta por separado. La fuente garantiza que no se producen, y deduplicar por iniciativa propia alteraría datos que el usuario espera ver íntegros.
 
 ## Regla R2: larga duración
 
 - Solo participan episodios de baja laboral; `Vacaciones` queda excluida del cálculo, del listado y del detalle operativo habitual.
 - Un episodio es de larga duración si su duración total efectiva es mayor o igual a 180 días.
 - La clasificación utiliza la duración total efectiva, no solo los días visibles dentro del periodo filtrado.
-- Las métricas del periodo utilizan exclusivamente los días que intersectan con él.
 - Se muestran los 10 empleados con el episodio individual más largo.
-- Sin filtro de centro, el top se calcula sobre todos los centros.
-- Con uno o varios centros seleccionados, el top se recalcula sobre el conjunto filtrado.
 - Cada empleado aparece una sola vez, representado por su episodio largo de mayor duración, con acceso al detalle de sus demás episodios.
-- Los resultados se ordenan por duración máxima descendente, fecha de inicio del episodio representativo descendente y, finalmente, identificador de empleado ascendente.
 - Si un empleado tiene varios episodios con la misma duración máxima, se utiliza como representativo el de fecha de inicio más reciente.
-- Se debe indicar cuándo un episodio es largo por su duración total aunque solo una parte se contabilice en el periodo visible.
+- Los resultados se ordenan por duración máxima descendente, fecha de inicio del episodio representativo descendente y, finalmente, identificador de empleado ascendente.
+
+### Filtro por centro
+
+La candidatura se construye **primero de forma global**, con todos los episodios del empleado, y solo después se filtra por centro. Cada empleado queda adscrito al centro de su **episodio representativo**, es decir, el más largo.
+
+La consecuencia hay que tenerla presente: un empleado con un episodio de 250 días en un centro y otro de 200 en un segundo centro aparece únicamente al filtrar el primero. No se divide ni se duplica entre centros, y su recuento de episodios largos sigue incluyendo los de otros centros.
+
+Es una decisión deliberada, registrada como D-050: partir a una persona entre centros produciría listados donde el mismo identificador aparece varias veces con cifras distintas, que es justo lo contrario de lo que la regla persigue. El top de 10 se aplica siempre después del filtro.
 
 ## Regla futura: adyacencia a vacaciones
 

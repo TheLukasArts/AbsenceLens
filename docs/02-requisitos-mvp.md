@@ -3,7 +3,7 @@
 ## Flujo principal
 
 1. El usuario abre la aplicación desde un equipo Windows 11 y un navegador moderno.
-2. Selecciona un archivo `.xlsx` conforme al perfil de importación soportado.
+2. Selecciona un archivo `.xlsx` conforme al perfil de importación soportado, con el selector nativo o arrastrándolo sobre la zona de importación.
 3. La aplicación valida estructura y tipos sin transmitir el contenido.
 4. El usuario selecciona la fecha de corte y, cuando proceda, filtros de análisis.
 5. La aplicación normaliza periodos y calcula las reglas.
@@ -98,7 +98,7 @@
 - Diseño para portátil y resolución de escritorio.
 - Cubrir la información necesaria de los dashboards de referencia mediante una interfaz propia, sin exigir una reproducción idéntica.
 - Respetar la paleta de marca en cabeceras, cuerpos, superficies y estados, utilizando tokens de color autorizados.
-- Primera acción evidente: seleccionar archivo.
+- Primera acción evidente: seleccionar archivo. Quien no disponga de uno puede descargar un libro sintético de ejemplo desde el propio panel.
 - El usuario debe entender el estado de privacidad antes de importar.
 - Las reglas y límites deben estar visibles, no ocultos en una caja negra.
 - Advertencias explicativas, no alarmistas.
