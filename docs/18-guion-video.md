@@ -2,14 +2,14 @@
 
 ## Ficha
 
-| Dato | Valor |
-| --- | --- |
-| Duración objetivo | 6 a 7 minutos |
-| Tono | Comercial: qué es, a quién ayuda, qué le ahorra y qué garantiza |
-| Formato | Voz en off sobre captura de pantalla, sin cámara |
-| Grabación | Por tramos, montados después |
-| Herramienta | OBS Studio |
-| URL de publicación | `https://thelukasarts.github.io/AbsenceLens/video/` |
+| Dato               | Valor                                                           |
+| ------------------ | --------------------------------------------------------------- |
+| Duración objetivo  | 6 a 7 minutos                                                   |
+| Tono               | Comercial: qué es, a quién ayuda, qué le ahorra y qué garantiza |
+| Formato            | Voz en off sobre captura de pantalla, sin cámara                |
+| Grabación          | Por tramos, montados después                                    |
+| Herramienta        | OBS Studio                                                      |
+| URL de publicación | `https://thelukasarts.github.io/AbsenceLens/video/`             |
 
 La parte técnica —arquitectura, capas, librerías y decisiones— **no entra en el vídeo**. Está en la
 presentación y en la documentación. Aquí solo se enseña el producto funcionando.
