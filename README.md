@@ -215,15 +215,14 @@ Cada cambio enviado a `main` ejecuta en GitHub Actions la instalación reproduci
 
 La aplicación mide sus propias fases con el reloj de alta resolución del navegador y muestra la duración al terminar la importación y el análisis. Solo se conserva el tiempo: ningún dato del archivo interviene en la medición.
 
-Sobre el conjunto sintético de 150.000 filas:
+Medido sobre el despliegue oficial con un archivo de 150.000 filas:
 
 | Fase | Tiempo |
 |---|---|
-| Lectura y decodificación del `.xlsx` | 3,72 s |
-| Validación del perfil de importación | 0,30 s |
-| Análisis completo | 0,26 s |
+| Importación completa (lectura, decodificación y validación) | 5,4 s |
+| Análisis completo | 0,2 s |
 
-El coste lo domina descomprimir el archivo, no las reglas de negocio. El método, el entorno y el historial de mediciones están en [Verificación de rendimiento](docs/19-verificacion-rendimiento.md).
+El coste lo domina descomprimir el archivo, no las reglas de negocio: analizar 150.000 filas cuesta dos décimas de segundo. El método, el entorno y el historial de mediciones están en [Verificación de rendimiento](docs/19-verificacion-rendimiento.md).
 
 ## Estructura del proyecto
 

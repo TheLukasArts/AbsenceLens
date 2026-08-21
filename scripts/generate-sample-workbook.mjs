@@ -56,7 +56,8 @@ function parseArguments(argv) {
     out: 'samples/demo-150000.xlsx',
     seed: 20260821,
     cutoff: '2026-07-31',
-    employees: 2_000,
+    // 0 = derivar de la volumetría para conservar la densidad de referencia.
+    employees: 0,
     // 21.500 de 150.000 en el conjunto de referencia.
     sicknessShare: 0.1433,
   };
@@ -155,13 +156,23 @@ function buildRow(employee, startDay, endDay, description, reportedDays) {
   ];
 }
 
+// En el conjunto de referencia cada empleado acumula unos 10,75 episodios de baja en dos años.
+// Esa densidad es la que hace que aparezcan candidatos de recurrencia corta: si se fija una
+// plantilla grande sobre pocos episodios, nadie alcanza los cinco de la ventana y R1 queda vacía.
+const EPISODES_PER_EMPLOYEE = 10.75;
+
+function resolveEmployeeCount(options, sicknessTarget) {
+  if (options.employees > 0) return options.employees;
+  return Math.max(40, Math.round(sicknessTarget / EPISODES_PER_EMPLOYEE));
+}
+
 function generateRows(options) {
   const random = createRandom(options.seed);
-  const employees = buildEmployees(random, options.employees);
+  const sicknessTarget = Math.round(options.rows * options.sicknessShare);
+  const employees = buildEmployees(random, resolveEmployeeCount(options, sicknessTarget));
   const cutoffDay = toEpochDay(options.cutoff);
   const windowStart = cutoffDay - 730;
 
-  const sicknessTarget = Math.round(options.rows * options.sicknessShare);
   const rows = [];
 
   for (let index = 0; index < sicknessTarget; index += 1) {
@@ -223,13 +234,14 @@ async function main() {
   await writeXlsxFile(data, { sheet: 'Ausencias' }).toFile(options.out);
 
   const sickness = rows.length - rows.filter((row) => row[5].value === 'Vacaciones').length;
+  const distinctEmployees = new Set(rows.map((row) => row[0].value)).size;
   const elapsed = ((performance.now() - startedAt) / 1000).toFixed(1);
 
   console.log(`Archivo generado: ${options.out}`);
   console.log(`  Filas de datos:        ${rows.length}`);
   console.log(`  Episodios de baja:     ${sickness}`);
   console.log(`  Filas de vacaciones:   ${rows.length - sickness}`);
-  console.log(`  Empleados distintos:   ${options.employees}`);
+  console.log(`  Empleados distintos:   ${distinctEmployees}`);
   console.log(`  Semilla:               ${options.seed}`);
   console.log(`  Generado en:           ${elapsed} s`);
 }
