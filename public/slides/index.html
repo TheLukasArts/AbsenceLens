@@ -1,224 +1,1272 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Presentación de AbsenceLens, TFM del Máster de Desarrollo con IA.">
-  <title>AbsenceLens · Presentación del proyecto</title>
-  <link rel="icon" href="../favicon.ico">
-  <link rel="stylesheet" href="./vendor/reveal/reveal.css">
-  <style>
-    :root{--r-background-color:#071a2b;--navy:#071a2b;--navy2:#0b2637;--ink:#102a3a;--mist:#f4f7f8;--white:#fff;--coral:#f46f61;--teal:#43c6b5;--gold:#f5c45b;--muted:#a9bbc5}
-    *{box-sizing:border-box}html,body,.reveal-viewport,.reveal{background:var(--navy)!important}body{margin:0}
-    .skip{position:fixed;z-index:100;top:.7rem;left:.7rem;padding:.7rem 1rem;color:var(--navy);background:#fff;transform:translateY(-160%)}.skip:focus{transform:none}
-    .reveal{color:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:30px}
-    .reveal .slides{text-align:left}.reveal .slides section{height:100%;padding:76px 94px 60px}
-    .reveal h1,.reveal h2,.reveal h3,.reveal p{margin-top:0}.reveal h1,.reveal h2,.reveal h3,.reveal strong{font-weight:750;letter-spacing:-.035em}
-    .reveal h1{margin-bottom:28px;font-size:94px;line-height:.95}.reveal h1 span,.closing h2 span{color:var(--coral)}
-    .reveal h2{max-width:1080px;margin-bottom:48px;font-size:52px;line-height:1.08;text-wrap:balance}.reveal h3{font-size:32px}
-    .reveal p,.reveal li{font-size:25px;line-height:1.4}.reveal small{font-size:18px}.reveal a{color:inherit}
-    .eyebrow{margin-bottom:24px;color:var(--teal);font-size:17px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.dark{color:#fff!important}.eyebrow.dark{color:var(--teal)!important}
-    .takeaway{margin-top:44px!important;padding-left:24px;border-left:5px solid var(--coral);font-size:22px!important}
-    .reveal footer{position:absolute;right:94px;bottom:28px;color:var(--muted);font-size:14px;letter-spacing:.08em}
-    .hero-grid{display:grid;grid-template-columns:1.5fr .65fr;align-items:center;gap:64px;min-height:430px}
-    .hero-copy{max-width:810px;color:#d9e7ec;font-size:32px!important;line-height:1.3!important}.hero-note{color:var(--muted);font-size:18px!important}
-    .author{margin-top:34px;color:var(--teal);font-size:20px!important;font-weight:750}
-    .lens{position:relative;width:300px;height:300px}.lens i{position:absolute;inset:0;border:12px solid var(--coral);border-radius:50%}
-    .lens i:nth-child(2){inset:46px;border-color:var(--teal)}.lens i:nth-child(3){inset:103px;border-color:var(--gold)}
-    .problem{display:grid;grid-template-columns:.85fr 1.5fr;align-items:end;gap:72px;margin-top:74px}.number strong{display:block;color:var(--coral);font-size:96px;line-height:.9}
-    .number span{display:block;max-width:330px;margin-top:20px;color:#d9e7ec;font-size:22px}.manual{display:flex;align-items:center;gap:17px;padding-bottom:22px}
-    .manual div{padding-bottom:10px;border-bottom:4px solid var(--teal);font-size:24px;font-weight:700}.manual b{color:var(--muted)}
-    .flow{display:flex;align-items:center;justify-content:space-between;margin-top:70px}.flow>b{color:#91a7b2;font-size:34px}.step{width:200px;color:#fff}
-    .step span,.step strong,.step small{display:block}.step span{margin-bottom:22px;color:#9fc1c9;font-size:16px;font-weight:800}.step strong{padding-top:16px;border-top:6px solid var(--teal);font-size:30px}
-    .step.accent strong{border-color:var(--coral)}.step small{margin-top:10px;color:#c5d5dc}
-    .privacy{display:grid;grid-template-columns:1fr 1.1fr;align-items:center;gap:100px}.browser{width:430px;height:270px;padding:20px;border:2px solid #72909f;border-radius:20px;background:#12364a;box-shadow:30px 30px 0 rgba(67,198,181,.12)}
-    .browser>i{display:inline-block;width:10px;height:10px;margin-right:7px;border-radius:50%;background:#72909f}.browser-content{display:flex;align-items:center;justify-content:center;gap:45px;height:200px}
-    .file{padding:24px 17px;border:3px solid var(--teal);color:var(--teal);font-size:24px;font-weight:800}.lock{display:grid;width:88px;height:88px;place-items:center;border-radius:50%;color:var(--navy);background:var(--coral);font-size:42px;font-weight:900}
-    .statements{margin:0;padding:0;list-style:none}.statements li{padding:17px 0 17px 42px;border-bottom:1px solid rgba(255,255,255,.16)}.statements li:before{content:"✓";position:absolute;margin-left:-42px;color:var(--teal);font-weight:900}
-    .privacy-rule{margin-top:44px!important;color:var(--muted);font-size:20px!important;word-spacing:14px}
-    .rules{display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-top:44px}.rule{min-height:300px;padding:36px;color:var(--ink);border-top:9px solid var(--coral);background:#fff;box-shadow:0 24px 50px rgba(7,26,43,.08)}
-    .rule:last-child{border-color:var(--teal)}.rule-code{color:#6f8793;font-size:16px;font-weight:850;letter-spacing:.12em}.rule h3{margin:16px 0 22px}.rule p{font-size:23px}.rule small{color:#58707c}
-    .formula{margin-top:30px!important;font-family:ui-monospace,"Cascadia Code",monospace;font-size:18px!important;text-align:center}
-    .features{display:grid;grid-template-columns:repeat(5,1fr);gap:22px;margin-top:56px}.features article{min-height:270px;padding:30px 22px;color:var(--ink);border-top:7px solid var(--teal);background:#fff}
-    .features article:nth-child(3){border-color:var(--coral)}.features span{display:block;margin-bottom:35px;color:#6f8793;font-size:15px;font-weight:800}.features strong{display:block;margin-bottom:18px;font-size:24px}.features p{color:#526b77;font-size:18px;line-height:1.35}
-    .architecture{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:stretch;margin-top:54px}.architecture div{min-height:230px;padding:26px 22px;color:var(--ink);border-top:7px solid #9db0b9;background:#fff}
-    .decisions{display:grid;grid-template-columns:1fr 1fr;gap:22px 70px;margin-top:44px}.decisions div{display:grid;grid-template-columns:70px 1fr;align-items:start;padding:19px 0;border-bottom:1px solid rgba(255,255,255,.16)}
-    .decisions span{color:var(--teal);font-size:16px;font-weight:850}.decisions strong{font-size:24px}.decisions small{grid-column:2;color:var(--muted);font-size:17px;line-height:1.35}
-    .architecture .core{border-color:var(--coral);transform:translateY(-18px)}.architecture span,.architecture strong{display:block}.architecture span{margin-bottom:35px;color:#6f8793;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.architecture strong{font-size:21px;line-height:1.3}
-    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:44px;margin-top:65px}.metrics div{padding-top:20px;border-top:5px solid var(--teal)}.metrics div:nth-child(2){border-color:var(--coral)}
-    .metrics strong,.metrics span{display:block}.metrics strong{font-size:64px}.metrics span{color:var(--muted);font-size:19px}.quality-path{display:flex;align-items:center;justify-content:center;gap:24px;margin:55px 0 35px;color:#d9e7ec;font-size:19px}.quality-path b{color:var(--coral)}
-    .ai{max-width:950px;color:#c5d5dc;font-size:19px!important}.stack{display:grid;grid-template-columns:1fr 1.15fr;gap:100px;margin-top:55px}.stack-copy p{margin-bottom:20px;padding-bottom:14px;color:#fff;border-bottom:1px solid rgba(255,255,255,.2);font-size:21px}
-    .deploy{display:grid;grid-template-columns:1fr 90px;align-items:center;gap:15px 28px;color:#fff}.deploy span{font-size:22px}.deploy b{padding:10px 14px;color:var(--navy);background:var(--teal);font-size:16px;text-align:center}.deploy i{grid-column:1/-1;width:2px;height:25px;margin-left:40px;background:var(--teal)}
-    .conclusions{display:grid;grid-template-columns:repeat(3,1fr);gap:60px;margin-top:70px}.conclusions div{padding-top:24px;border-top:7px solid var(--teal)}.conclusions div:nth-child(2){border-color:var(--coral)}.conclusions strong{display:block;margin-bottom:20px;font-size:30px}.conclusions p{color:#d9e7ec;font-size:20px}
-    .boundary{display:grid;grid-template-columns:1fr 1fr;gap:90px;margin-top:55px}.boundary>div{min-height:275px;padding:34px 42px;border-top:8px solid}.product{border-color:var(--teal)!important;background:rgba(67,198,181,.1)}.human{border-color:var(--coral)!important;background:rgba(244,111,97,.1)}
-    .boundary span,.boundary strong{display:block}.boundary span{margin-bottom:28px;color:var(--muted);font-size:17px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.boundary strong{margin-bottom:12px;font-size:29px}.boundary-copy{margin-top:38px!important;color:#d9e7ec;font-size:21px!important}
-    .closing h2{margin-top:80px;font-size:68px;line-height:1.06}.closing>p{max-width:900px;color:#d9e7ec;font-size:26px}.links{display:flex;gap:25px;margin-top:60px}.links a{padding:15px 22px;border:2px solid var(--teal);font-size:18px;font-weight:750;text-decoration:none}.links a:last-child{border-color:var(--coral)}
-    .reveal .progress{height:5px;color:var(--coral)}.reveal .controls{color:var(--teal)}.reveal .slide-number{right:auto;bottom:18px;left:22px;color:var(--muted);background:transparent;font-size:13px}
-    @media(prefers-reduced-motion:reduce){.reveal .slides section,.reveal .progress span{transition:none!important}}
-  </style>
-</head>
-<body>
-  <a class="skip" href="#presentacion">Ir a la presentación</a>
-  <div class="reveal" id="presentacion"><div class="slides">
-    <section>
-      <div class="eyebrow">Trabajo Fin de Máster · Desarrollo con IA · 2026</div>
-      <div class="hero-grid">
-        <div><h1>Absence<span>Lens</span></h1><p class="hero-copy">Coincidencias temporales explicables para acelerar la revisión humana de ausencias.</p><p class="author">Óscar Abad · Máster de Desarrollo con IA · BIG School</p></div>
-        <div class="lens" aria-hidden="true"><i></i><i></i><i></i></div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Presentación técnica de AbsenceLens, Trabajo Fin de Máster del Máster de Desarrollo con IA."
+    />
+    <title>AbsenceLens · Presentación del proyecto</title>
+    <link rel="icon" href="../favicon.ico" />
+    <link rel="stylesheet" href="./vendor/reveal/reveal.css" />
+    <style>
+      :root {
+        --deep: #034c5e;
+        --deeper: #023341;
+        --ink: #102a3a;
+        --white: #ffffff;
+        --teal: #28bcb5;
+        --teal-soft: #7fd9d4;
+        --coral: #ff8364;
+        --gold: #f5c45b;
+        --muted: #abc1c7;
+        --line: rgba(255, 255, 255, 0.17);
+        --panel: #ffffff;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body,
+      html.reveal-full-page,
+      .reveal-viewport,
+      .reveal {
+        background: var(--deeper);
+      }
+
+      body {
+        margin: 0;
+      }
+
+      .reveal {
+        color: var(--white);
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          'Helvetica Neue',
+          Arial,
+          sans-serif;
+        font-size: 30px;
+      }
+
+      .reveal .slides {
+        text-align: left;
+      }
+
+      .reveal .slides section {
+        height: 100%;
+        padding: 70px 92px 68px;
+      }
+
+      .skip {
+        position: fixed;
+        z-index: 100;
+        top: 0.7rem;
+        left: 0.7rem;
+        padding: 0.7rem 1rem;
+        color: var(--deeper);
+        background: var(--white);
+        transform: translateY(-160%);
+      }
+
+      .skip:focus {
+        transform: none;
+      }
+
+      .reveal h1,
+      .reveal h2,
+      .reveal h3,
+      .reveal p {
+        margin-top: 0;
+      }
+
+      .reveal h1,
+      .reveal h2,
+      .reveal h3,
+      .reveal strong {
+        font-weight: 700;
+        letter-spacing: -0.025em;
+      }
+
+      .reveal h1 {
+        margin-bottom: 26px;
+        font-size: 92px;
+        line-height: 0.96;
+      }
+
+      .reveal h1 span,
+      .closing h2 span {
+        color: var(--coral);
+      }
+
+      .reveal h2 {
+        max-width: 1070px;
+        margin-bottom: 42px;
+        font-size: 49px;
+        line-height: 1.09;
+      }
+
+      .reveal h3 {
+        font-size: 29px;
+      }
+
+      .reveal p,
+      .reveal li {
+        font-size: 22px;
+        line-height: 1.38;
+      }
+
+      .reveal small {
+        font-size: 17px;
+      }
+
+      .reveal a {
+        color: inherit;
+      }
+
+      .eyebrow {
+        margin-bottom: 21px;
+        color: var(--teal);
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .takeaway {
+        margin-top: 56px !important;
+        padding-left: 24px;
+        border-left: 5px solid var(--coral);
+        color: #d7e5e8;
+        font-size: 20px !important;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 0.65fr;
+        align-items: center;
+        gap: 62px;
+        min-height: 420px;
+      }
+
+      .hero-copy {
+        max-width: 790px;
+        color: #d9e7ec;
+        font-size: 30px !important;
+        line-height: 1.3 !important;
+      }
+
+      .hero-note {
+        color: var(--muted);
+        font-size: 17px !important;
+      }
+
+      .author {
+        margin-top: 32px;
+        color: var(--teal-soft);
+        font-size: 19px !important;
+        font-weight: 700;
+      }
+
+      .lens {
+        position: relative;
+        width: 290px;
+        height: 290px;
+      }
+
+      .lens i {
+        position: absolute;
+        inset: 0;
+        border: 11px solid var(--coral);
+        border-radius: 50%;
+      }
+
+      .lens i:nth-child(2) {
+        inset: 44px;
+        border-color: var(--teal);
+      }
+
+      .lens i:nth-child(3) {
+        inset: 100px;
+        border-color: var(--gold);
+      }
+
+      .problem {
+        display: grid;
+        grid-template-columns: 0.85fr 1.5fr;
+        align-items: end;
+        gap: 68px;
+        margin-top: 68px;
+      }
+
+      .number strong {
+        display: block;
+        color: var(--coral);
+        font-size: 92px;
+        line-height: 0.9;
+      }
+
+      .number span {
+        display: block;
+        max-width: 330px;
+        margin-top: 18px;
+        color: #d9e7ec;
+        font-size: 21px;
+      }
+
+      .manual {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding-bottom: 20px;
+      }
+
+      .manual div {
+        padding-bottom: 9px;
+        border-bottom: 4px solid var(--teal);
+        font-size: 22px;
+        font-weight: 700;
+      }
+
+      .manual b {
+        color: var(--coral);
+      }
+
+      .two-column {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 72px;
+        margin-top: 34px;
+      }
+
+      .column-title {
+        margin-bottom: 18px;
+        color: var(--teal);
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .column-title.coral {
+        color: var(--coral);
+      }
+
+      .clean-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .clean-list li {
+        padding: 13px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .clean-list b {
+        color: var(--teal-soft);
+      }
+
+      .clean-list.coral b {
+        color: var(--coral);
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr auto 1fr;
+        align-items: stretch;
+        gap: 12px;
+        margin-top: 58px;
+      }
+
+      .step {
+        min-width: 0;
+      }
+
+      .flow-arrow {
+        display: grid;
+        align-self: center;
+        width: 28px;
+        margin-top: 30px;
+        place-items: center;
+        color: var(--coral);
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .step span,
+      .step strong,
+      .step small {
+        display: block;
+      }
+
+      .step span {
+        margin-bottom: 20px;
+        color: var(--muted);
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .step strong {
+        padding-top: 14px;
+        border-top: 6px solid var(--teal);
+        font-size: 24px;
+      }
+
+      .step.accent strong {
+        border-color: var(--coral);
+      }
+
+      .step small {
+        margin-top: 9px;
+        color: #c5d5dc;
+        font-size: 15px;
+      }
+
+      .privacy {
+        display: grid;
+        grid-template-columns: 1fr 1.1fr;
+        align-items: center;
+        gap: 96px;
+      }
+
+      .browser {
+        width: 420px;
+        height: 260px;
+        padding: 19px;
+        border: 2px solid #72909f;
+        border-radius: 18px;
+        background: #0f5262;
+        box-shadow: 26px 26px 0 rgba(40, 188, 181, 0.13);
+      }
+
+      .browser > i {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 7px;
+        border-radius: 50%;
+        background: #72909f;
+      }
+
+      .browser-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 42px;
+        height: 194px;
+      }
+
+      .file {
+        padding: 22px 16px;
+        border: 3px solid var(--teal);
+        color: var(--teal);
+        font-size: 22px;
+        font-weight: 700;
+      }
+
+      .lock {
+        display: grid;
+        width: 84px;
+        height: 84px;
+        place-items: center;
+        border-radius: 50%;
+        color: var(--deeper);
+        background: var(--coral);
+        font-size: 38px;
+        font-weight: 800;
+      }
+
+      .statements {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .statements li {
+        position: relative;
+        padding: 15px 0 15px 40px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .statements li::before {
+        position: absolute;
+        left: 0;
+        color: var(--teal);
+        font-weight: 800;
+        content: '✓';
+      }
+
+      .privacy-rule {
+        margin-top: 40px !important;
+        color: var(--muted);
+        font-size: 18px !important;
+        word-spacing: 12px;
+      }
+
+      .rules {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 72px;
+        margin-top: 38px;
+      }
+
+      .rule {
+        min-height: 270px;
+        padding: 32px;
+        color: var(--ink);
+        border-top: 9px solid var(--coral);
+        background: var(--panel);
+        box-shadow: 0 20px 46px rgba(1, 24, 31, 0.16);
+      }
+
+      .rule:last-child {
+        border-color: var(--teal);
+      }
+
+      .rule-code {
+        color: #58717b;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+      }
+
+      .rule h3 {
+        margin: 14px 0 18px;
+      }
+
+      .rule p {
+        font-size: 21px;
+      }
+
+      .rule small {
+        color: #526b77;
+      }
+
+      .formula {
+        margin-top: 36px !important;
+        font-family: ui-monospace, 'Cascadia Code', monospace;
+        font-size: 17px !important;
+        text-align: center;
+      }
+
+      .architecture {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 11px;
+        align-items: stretch;
+        margin-top: 48px;
+      }
+
+      .architecture div {
+        min-height: 220px;
+        padding: 24px 20px;
+        color: var(--ink);
+        border-top: 7px solid #9db0b9;
+        background: var(--panel);
+      }
+
+      .architecture .core {
+        border-color: var(--coral);
+        transform: translateY(-16px);
+      }
+
+      .architecture span,
+      .architecture strong {
+        display: block;
+      }
+
+      .architecture span {
+        margin-bottom: 30px;
+        color: #58717b;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .architecture strong {
+        font-size: 19px;
+        line-height: 1.3;
+      }
+
+      .decisions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px 66px;
+        margin-top: 36px;
+      }
+
+      .decisions div {
+        display: grid;
+        grid-template-columns: 64px 1fr;
+        align-items: start;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .decisions span {
+        color: var(--coral);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .decisions strong {
+        font-size: 22px;
+      }
+
+      .decisions small {
+        grid-column: 2;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.3;
+      }
+
+      .method-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 42px;
+        margin-top: 36px;
+      }
+
+      .method-card {
+        min-height: 190px;
+        padding: 30px;
+        border-top: 7px solid var(--teal);
+        background: rgba(40, 188, 181, 0.09);
+      }
+
+      .method-card:last-child {
+        border-color: var(--coral);
+        background: rgba(255, 131, 100, 0.09);
+      }
+
+      .method-card span {
+        color: var(--teal-soft);
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .method-card:last-child span {
+        color: var(--coral);
+      }
+
+      .method-card h3 {
+        margin: 18px 0 16px;
+      }
+
+      .method-card p {
+        color: #d5e3e7;
+        font-size: 18px;
+      }
+
+      .method-detail {
+        display: grid;
+        grid-template-columns: 1.35fr 1fr;
+        gap: 42px;
+        margin-top: 30px;
+        padding-top: 22px;
+        border-top: 1px solid var(--line);
+      }
+
+      .method-detail span {
+        display: block;
+        margin-bottom: 12px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .method-process {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #d9e7ec;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .method-process b {
+        color: var(--coral);
+        font-size: 20px;
+      }
+
+      .method-tools {
+        color: #d5e3e7;
+        font-size: 16px;
+        line-height: 1.4;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 40px;
+        margin-top: 54px;
+      }
+
+      .metrics div {
+        padding-top: 18px;
+        border-top: 5px solid var(--teal);
+      }
+
+      .metrics div:nth-child(2),
+      .metrics div:nth-child(4) {
+        border-color: var(--coral);
+      }
+
+      .metrics strong,
+      .metrics span {
+        display: block;
+      }
+
+      .metrics strong {
+        font-size: 60px;
+      }
+
+      .metrics strong.word {
+        padding-top: 10px;
+        font-size: 35px;
+      }
+
+      .metrics span {
+        color: var(--muted);
+        font-size: 18px;
+      }
+
+      .quality-path {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        margin: 50px 0 30px;
+        color: #d9e7ec;
+        font-size: 18px;
+      }
+
+      .quality-path b {
+        color: var(--coral);
+      }
+
+      .ai {
+        color: #c5d5dc;
+        font-size: 18px !important;
+      }
+
+      .benchmark-note {
+        margin-top: 20px !important;
+        color: var(--muted);
+        font-size: 15px !important;
+        text-align: center;
+      }
+
+      .stack {
+        display: grid;
+        grid-template-columns: 1fr 1.15fr;
+        gap: 96px;
+        margin-top: 48px;
+      }
+
+      .stack-copy p {
+        margin-bottom: 18px;
+        padding-bottom: 13px;
+        color: var(--white);
+        border-bottom: 1px solid var(--line);
+        font-size: 20px;
+      }
+
+      .deploy {
+        display: grid;
+        grid-template-columns: 1fr 88px;
+        align-items: center;
+        gap: 13px 26px;
+      }
+
+      .deploy span {
+        font-size: 21px;
+      }
+
+      .deploy b {
+        padding: 9px 12px;
+        color: var(--deeper);
+        background: var(--teal);
+        font-size: 15px;
+        text-align: center;
+      }
+
+      .deploy b.warm {
+        background: var(--coral);
+      }
+
+      .deploy i {
+        grid-column: 1 / -1;
+        width: 2px;
+        height: 22px;
+        margin-left: 38px;
+        background: var(--coral);
+      }
+
+      .outcomes {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 66px;
+        margin-top: 38px;
+      }
+
+      .outcomes h3 {
+        padding-bottom: 15px;
+        border-bottom: 6px solid var(--teal);
+      }
+
+      .outcomes > div:last-child h3 {
+        border-color: var(--coral);
+      }
+
+      .outcomes li {
+        padding: 11px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .outcomes > div:last-child strong {
+        color: var(--coral);
+      }
+
+      .boundary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 84px;
+        margin-top: 48px;
+      }
+
+      .boundary > div {
+        min-height: 250px;
+        padding: 30px 38px;
+        border-top: 8px solid;
+      }
+
+      .product {
+        border-color: var(--teal) !important;
+        background: rgba(40, 188, 181, 0.1);
+      }
+
+      .human {
+        border-color: var(--coral) !important;
+        background: rgba(255, 131, 100, 0.1);
+      }
+
+      .boundary span,
+      .boundary strong {
+        display: block;
+      }
+
+      .boundary span {
+        margin-bottom: 24px;
+        color: var(--muted);
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .boundary strong {
+        margin-bottom: 10px;
+        font-size: 27px;
+      }
+
+      .boundary-copy {
+        margin-top: 34px !important;
+        color: #d9e7ec;
+        font-size: 19px !important;
+      }
+
+      .closing h2 {
+        margin-top: 60px;
+        font-size: 64px;
+        line-height: 1.06;
+      }
+
+      .closing > p {
+        max-width: 900px;
+        color: #d9e7ec;
+        font-size: 23px;
+      }
+
+      .links {
+        display: flex;
+        gap: 18px;
+        margin-top: 50px;
+      }
+
+      .closing-journey {
+        max-width: 960px;
+        color: #d9e7ec;
+        font-size: 20px !important;
+      }
+
+      .links a {
+        padding: 14px 22px;
+        font-size: 17px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .links .app-link {
+        color: var(--deeper);
+        background: var(--teal);
+      }
+
+      .links .video-link {
+        color: var(--deeper);
+        background: var(--coral);
+      }
+
+      .links .code-link {
+        border: 2px solid var(--muted);
+      }
+
+      .reveal .progress {
+        height: 5px;
+        color: var(--coral);
+      }
+
+      .reveal .controls {
+        color: var(--teal);
+      }
+
+      #deck-number {
+        position: fixed;
+        z-index: 30;
+        bottom: 18px;
+        left: 22px;
+        min-width: 72px;
+        padding: 5px 10px;
+        color: var(--muted);
+        border: 1px solid var(--line);
+        background: rgba(2, 51, 65, 0.78);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.06em;
+        text-align: center;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .reveal .slides section,
+        .reveal .progress span {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#presentacion">Ir a la presentación</a>
+    <div class="reveal" id="presentacion">
+      <div class="slides">
+        <section>
+          <div class="eyebrow">Trabajo Fin de Máster · Desarrollo con IA · 2026</div>
+          <div class="hero-grid">
+            <div>
+              <h1>Absence<span>Lens</span></h1>
+              <p class="hero-copy">
+                Coincidencias temporales explicables para acelerar la revisión humana de ausencias.
+              </p>
+              <p class="author">Óscar Abad · Máster de Desarrollo con IA · BIG School</p>
+            </div>
+            <div class="lens" aria-hidden="true"><i></i><i></i><i></i></div>
+          </div>
+          <p class="hero-note">
+            Local-first · Sin backend · Desarrollado íntegramente con IA bajo supervisión humana
+          </p>
+        </section>
+
+        <section>
+          <div class="eyebrow">El problema</div>
+          <h2>Cada mes, una persona repite el mismo cribado manual sobre miles de filas</h2>
+          <div class="problem">
+            <div class="number">
+              <strong>≈150.000</strong
+              ><span>filas por archivo: 21.500 ausencias y el resto, vacaciones</span>
+            </div>
+            <div class="manual" aria-label="Proceso manual actual">
+              <div>Filtrar</div>
+              <b>→</b>
+              <div>Ordenar</div>
+              <b>→</b>
+              <div>Revisar</div>
+              <b>→</b>
+              <div>Repetir</div>
+            </div>
+          </div>
+          <p class="takeaway">
+            El coste no está en una fórmula aislada, sino en repetir el proceso cada mes y justificar
+            después cada resultado.
+          </p>
+        </section>
+
+        <section>
+          <div class="eyebrow">Objetivos y alcance</div>
+          <h2>Un producto acotado y un experimento sobre cómo desarrollar con IA</h2>
+          <div class="two-column">
+            <div>
+              <div class="column-title">Qué se propone</div>
+              <ul class="clean-list">
+                <li>Resolver un problema <b>real</b> planteado por otra persona</li>
+                <li>Reglas <b>deterministas y explicables</b></li>
+                <li>Arquitectura, pruebas, CI/CD y privacidad desde el diseño</li>
+                <li>Desarrollo <b>íntegro con IA</b>, bajo supervisión humana</li>
+              </ul>
+            </div>
+            <div>
+              <div class="column-title coral">Qué queda fuera</div>
+              <ul class="clean-list coral">
+                <li>Decidir si una ausencia está <b>justificada</b></li>
+                <li>Puntuación de riesgo o predicción individual</li>
+                <li>Backend, persistencia e integración corporativa</li>
+                <li>Recomendaciones laborales o disciplinarias</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="eyebrow">La propuesta</div>
+          <h2>Del Excel a una lista breve, validada, trazable y revisable</h2>
+          <div class="flow" aria-label="Flujo principal de AbsenceLens">
+            <div class="step">
+              <span>01</span><strong>Importar</strong><small>Un único .xlsx local</small>
+            </div>
+            <b class="flow-arrow" aria-hidden="true">→</b>
+            <div class="step accent">
+              <span>02</span><strong>Validar</strong><small>Estructura, tipos y fechas</small>
+            </div>
+            <b class="flow-arrow" aria-hidden="true">→</b>
+            <div class="step">
+              <span>03</span><strong>Analizar</strong><small>Reglas deterministas</small>
+            </div>
+            <b class="flow-arrow" aria-hidden="true">→</b>
+            <div class="step">
+              <span>04</span><strong>Explicar</strong><small>Episodios y criterios</small>
+            </div>
+            <b class="flow-arrow" aria-hidden="true">→</b>
+            <div class="step accent">
+              <span>05</span><strong>Revisar</strong><small>Filtrar y exportar</small>
+            </div>
+          </div>
+          <p class="takeaway">
+            Un candidato es una persona que cumple una regla y pasa a revisión humana; no implica
+            ninguna conclusión laboral.
+          </p>
+        </section>
+
+        <section>
+          <div class="eyebrow">Privacidad desde el diseño</div>
+          <h2>Los datos no salen del navegador</h2>
+          <div class="privacy">
+            <div class="browser" aria-hidden="true">
+              <i></i><i></i><i></i>
+              <div class="browser-content">
+                <div class="file">XLSX</div>
+                <div class="lock">✓</div>
+              </div>
+            </div>
+            <ul class="statements">
+              <li>Procesamiento íntegro en memoria</li>
+              <li>Sin backend ni base de datos</li>
+              <li>Sin analítica, telemetría o persistencia</li>
+              <li>Solo datos sintéticos en pruebas y demostración</li>
+            </ul>
+          </div>
+          <p class="privacy-rule">Seleccionar · analizar · exportar · borrar sesión</p>
+        </section>
+
+        <section>
+          <div class="eyebrow">Reglas de negocio</div>
+          <h2>Dos reglas claras reducen el universo de revisión</h2>
+          <div class="rules">
+            <article class="rule">
+              <div class="rule-code">R1</div>
+              <h3>Recurrencia corta</h3>
+              <p>
+                <strong>≥ 5 episodios</strong> de hasta 30 días iniciados en una ventana de 12
+                meses.
+              </p>
+              <small>Orden: cantidad → recencia → nómina</small>
+            </article>
+            <article class="rule">
+              <div class="rule-code">R2</div>
+              <h3>Larga duración</h3>
+              <p><strong>≥ 180 días</strong> de duración efectiva en al menos un episodio.</p>
+              <small>Una fila por empleado · top global o por centros</small>
+            </article>
+          </div>
+          <p class="formula">duración efectiva = fecha final − fecha inicial + 1</p>
+        </section>
+
+        <section>
+          <div class="eyebrow">Arquitectura</div>
+          <h2>El dominio permanece independiente de la interfaz y de Excel</h2>
+          <div class="architecture" aria-label="Capas de arquitectura">
+            <div><span>Entrada</span><strong>Archivo XLSX local</strong></div>
+            <div><span>Infraestructura</span><strong>Lectura, escritura y descarga</strong></div>
+            <div><span>Aplicación</span><strong>Importación, revisión e informes</strong></div>
+            <div class="core"><span>Dominio</span><strong>Fechas, episodios y reglas R1/R2</strong></div>
+            <div><span>Presentación</span><strong>Angular y componentes accesibles</strong></div>
+          </div>
+          <p class="takeaway">
+            Las dependencias apuntan hacia el dominio: cambiar el perfil o la librería de Excel no
+            obliga a tocar las reglas.
+          </p>
+        </section>
+
+        <section>
+          <div class="eyebrow">Decisiones clave</div>
+          <h2>Las restricciones del problema definen la solución técnica</h2>
+          <div class="decisions">
+            <div>
+              <span>D1</span><strong>Local-first</strong
+              ><small>El archivo permanece en el navegador y en memoria.</small>
+            </div>
+            <div>
+              <span>D2</span><strong>Sin backend</strong
+              ><small>Menos superficie de riesgo, coste y operación.</small>
+            </div>
+            <div>
+              <span>D3</span><strong>Dominio puro</strong
+              ><small>Las reglas no dependen de Angular ni de Excel.</small>
+            </div>
+            <div>
+              <span>D4</span><strong>Fechas explícitas</strong
+              ><small>Cálculos inclusivos sin zona horaria.</small>
+            </div>
+            <div>
+              <span>D5</span><strong>Explicabilidad</strong
+              ><small>Cada coincidencia conserva episodios y criterios.</small>
+            </div>
+            <div>
+              <span>D6</span><strong>Dependencias proporcionales</strong
+              ><small>Bibliotecas concretas, encapsuladas y sustituibles.</small>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="eyebrow">Metodología</div>
+          <h2>De usar la IA como ayuda puntual a supervisar un desarrollo completo</h2>
+          <div class="method-cards">
+            <article class="method-card">
+              <span>Cómo la uso normalmente</span>
+              <h3>Apoyo para tareas acotadas</h3>
+              <p>
+                Completar código, resolver una duda o revisar un fragmento. El resto lo escribo yo.
+              </p>
+            </article>
+            <article class="method-card">
+              <span>Qué he probado aquí</span>
+              <h3>Todo el código generado por IA</h3>
+              <p>
+                No he escrito manualmente el código de la aplicación: he definido, dirigido y
+                validado cada cambio.
+              </p>
+            </article>
+          </div>
+          <div class="method-detail">
+            <div>
+              <span>Proceso de trabajo</span>
+              <div class="method-process">
+                Requisito <b>→</b> Incremento <b>→</b> Pruebas <b>→</b> Revisión
+              </div>
+            </div>
+            <div>
+              <span>Herramientas</span>
+              <div class="method-tools">
+                Codex y ChatGPT 5.6 Sol para desarrollar.<br />
+                Copilot con Claude Sonnet y Opus 5 para revisar.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="eyebrow">Calidad verificable</div>
+          <h2>Rendimiento medido sobre el volumen real y calidad automatizada</h2>
+          <div class="metrics">
+            <div><strong>149.999</strong><span>registros válidos leídos</span></div>
+            <div><strong>3–4 s</strong><span>lectura y validación del libro</span></div>
+            <div><strong class="word">Inmediato</strong><span>resultado del análisis</span></div>
+            <div><strong>47</strong><span>pruebas automatizadas</span></div>
+          </div>
+          <div class="quality-path">
+            <span>Commit</span><b>→</b><span>47 pruebas · 23 casos</span><b>→</b
+            ><span>Build</span><b>→</b><span>GitHub Pages</span>
+          </div>
+          <p class="ai">
+            La revisión humana encontró un fallo de zona horaria que las pruebas no veían:
+            supervisar no es aprobar sin leer.
+          </p>
+          <p class="benchmark-note">
+            Medición manual local con un libro autorizado de unas 150.000 filas. El archivo no se
+            conserva ni forma parte del repositorio.
+          </p>
+        </section>
+
+        <section>
+          <div class="eyebrow">Tecnología y entrega</div>
+          <h2>Un frontend estático basta para resolver el problema</h2>
+          <div class="stack">
+            <div class="stack-copy">
+              <p><strong>Angular 22</strong> + TypeScript + signals</p>
+              <p>Angular Material 22</p>
+              <p>read-excel-file + write-excel-file</p>
+              <p>Vitest + GitHub Actions</p>
+            </div>
+            <div class="deploy">
+              <span>Repositorio público</span><b>main</b><i></i> <span>Build reproducible</span
+              ><b class="warm">CI</b><i></i> <span>Despliegue gratuito</span><b>Pages</b>
+            </div>
+          </div>
+          <p class="takeaway">
+            Sin servidores que mantener, credenciales de prueba ni costes de infraestructura.
+          </p>
+        </section>
+
+        <section>
+          <div class="eyebrow">Resultado y aprendizaje</div>
+          <h2>El producto funciona; el experimento también deja una respuesta</h2>
+          <div class="outcomes">
+            <div>
+              <h3>Lo construido</h3>
+              <ul class="clean-list">
+                <li>Aplicación funcional, publicada y de uso libre</li>
+                <li>
+                  En el conjunto sintético de aceptación: <strong>7 candidatos R1</strong> y
+                  <strong>9 candidatos R2</strong>
+                </li>
+                <li>Resultados reproducibles en cada integración</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Lo aprendido</h3>
+              <ul class="clean-list">
+                <li>La IA ahorra mucho en <strong>estructura, pruebas y documentación</strong></li>
+                <li>Cuesta más al <strong>afinar detalles</strong> según criterio propio</li>
+                <li>El coste de modelos y tokens también hay que gestionarlo</li>
+              </ul>
+            </div>
+          </div>
+          <p class="takeaway">
+            La IA rinde mejor cuanto más estructurada es la tarea, y peor cuanto más subjetivo es el
+            resultado esperado.
+          </p>
+        </section>
+
+        <section>
+          <div class="eyebrow">Alcance consciente</div>
+          <h2>Limitaciones conocidas y próximos pasos</h2>
+          <div class="two-column">
+            <div>
+              <div class="column-title coral">Limitaciones actuales</div>
+              <ul class="clean-list coral">
+                <li>Un único perfil de importación, con columnas fijas</li>
+                <li>Una fila inválida bloquea toda la importación</li>
+                <li>Sin persistencia: cerrar la pestaña vacía la sesión</li>
+              </ul>
+            </div>
+            <div>
+              <div class="column-title">Próximos pasos</div>
+              <ul class="clean-list">
+                <li>Adyacencia entre bajas y vacaciones</li>
+                <li>Plantillas de importación configurables</li>
+                <li>Modo oscuro y ejecución instalable como PWA</li>
+              </ul>
+            </div>
+          </div>
+          <p class="takeaway">
+            Ampliar el producto sin romper sus principios: procesamiento local, reglas explicables y
+            revisión humana.
+          </p>
+        </section>
+
+        <section>
+          <div class="eyebrow">Uso responsable</div>
+          <h2>La herramienta encuentra coincidencias; las personas deciden</h2>
+          <div class="boundary">
+            <div class="product">
+              <span>AbsenceLens</span><strong>Importa</strong><strong>Calcula</strong
+              ><strong>Explica</strong>
+            </div>
+            <div class="human">
+              <span>Revisión humana</span><strong>Contrasta</strong><strong>Contextualiza</strong
+              ><strong>Decide</strong>
+            </div>
+          </div>
+          <p class="boundary-copy">
+            Sin predicción individual, puntuaciones, investigación automática ni recomendaciones
+            disciplinarias.
+          </p>
+        </section>
+
+        <section class="closing">
+          <div class="eyebrow">AbsenceLens</div>
+          <h2>Menos búsqueda manual.<br /><span>Más trazabilidad para revisar.</span></h2>
+          <p class="closing-journey">
+            Gracias por conocer el proyecto. El vídeo muestra el flujo completo y la aplicación
+            permite probarlo con un archivo sintético y resultados de referencia.
+          </p>
+          <div class="links">
+            <a class="video-link" href="https://thelukasarts.github.io/AbsenceLens/video/"
+              >Ver el vídeo</a
+            >
+            <a class="app-link" href="https://thelukasarts.github.io/AbsenceLens/"
+              >Probar la aplicación</a
+            >
+            <a class="code-link" href="https://github.com/TheLukasArts/AbsenceLens"
+              >Código y documentación</a
+            >
+          </div>
+        </section>
       </div>
-      <p class="hero-note">Local-first · Sin backend · Datos sintéticos para pruebas y evaluación</p>
-      <aside class="notes">[Sources]\n- docs/01-contexto-y-vision.md\n- docs/05-privacidad-etica-seguridad.md</aside>
-    </section>
+    </div>
 
-    <section>
-      <div class="eyebrow">El problema</div>
-      <h2>Encontrar patrones entre miles de filas sigue siendo una tarea manual</h2>
-      <div class="problem">
-        <div class="number"><strong>≈15.000</strong><span>registros en un histórico habitual</span></div>
-        <div class="manual" aria-label="Proceso manual actual"><div>Filtrar</div><b>→</b><div>Ordenar</div><b>→</b><div>Revisar</div><b>→</b><div>Repetir</div></div>
-      </div>
-      <p class="takeaway">El coste no está en una fórmula aislada, sino en repetir el proceso y justificar cada resultado.</p>
-      <footer>AbsenceLens · 02</footer>
-      <aside class="notes">[Sources]\n- docs/01-contexto-y-vision.md</aside>
-    </section>
+    <div id="deck-number" aria-hidden="true">01 / 15</div>
+    <script src="./vendor/reveal/reveal.js"></script>
+    <script>
+      const deckNumber = document.querySelector('#deck-number');
 
-    <section>
-      <div class="eyebrow dark">La propuesta</div>
-      <h2 class="dark">Del Excel a una lista breve, trazable y revisable</h2>
-      <div class="flow" aria-label="Flujo principal de AbsenceLens">
-        <div class="step"><span>01</span><strong>Importar</strong><small>Un único .xlsx</small></div><b>→</b>
-        <div class="step accent"><span>02</span><strong>Analizar</strong><small>Reglas deterministas</small></div><b>→</b>
-        <div class="step"><span>03</span><strong>Explicar</strong><small>Episodios y criterios</small></div><b>→</b>
-        <div class="step"><span>04</span><strong>Revisar</strong><small>Decisión humana</small></div>
-      </div>
-      <p class="takeaway dark">El resultado es una coincidencia explicada, nunca una conclusión laboral.</p>
-      <footer class="dark">AbsenceLens · 03</footer>
-      <aside class="notes">[Sources]\n- docs/02-requisitos-mvp.md\n- docs/03-reglas-negocio.md</aside>
-    </section>
+      function updateDeckNumber() {
+        const current = String(Reveal.getIndices().h + 1).padStart(2, '0');
+        const total = String(Reveal.getTotalSlides()).padStart(2, '0');
+        deckNumber.textContent = `${current} / ${total}`;
+      }
 
-    <section>
-      <div class="eyebrow">Privacidad desde el diseño</div>
-      <h2>Los datos no salen del navegador</h2>
-      <div class="privacy">
-        <div class="browser" aria-hidden="true"><i></i><i></i><i></i><div class="browser-content"><div class="file">XLSX</div><div class="lock">✓</div></div></div>
-        <ul class="statements"><li>Procesamiento íntegro en memoria</li><li>Sin backend ni base de datos</li><li>Sin analítica, telemetría o persistencia</li><li>Evaluación con datos creados desde cero</li></ul>
-      </div>
-      <p class="privacy-rule">Seleccionar · analizar · exportar · borrar sesión</p>
-      <footer>AbsenceLens · 04</footer>
-      <aside class="notes">[Sources]\n- docs/05-privacidad-etica-seguridad.md\n- docs/adr/0001-lector-xlsx.md</aside>
-    </section>
+      Reveal.initialize({
+        hash: true,
+        controls: true,
+        controlsTutorial: false,
+        progress: true,
+        slideNumber: false,
+        center: false,
+        transition: 'fade',
+        backgroundTransition: 'fade',
+        width: 1280,
+        height: 720,
+        margin: 0,
+        minScale: 0.2,
+        maxScale: 2,
+        keyboard: true,
+        touch: true,
+      }).then(updateDeckNumber);
 
-    <section>
-      <div class="eyebrow dark">Reglas de negocio</div>
-      <h2 class="dark">Dos reglas claras reducen el universo de revisión</h2>
-      <div class="rules">
-        <article class="rule"><div class="rule-code">R1</div><h3>Recurrencia corta</h3><p><strong>≥ 5 episodios</strong> de hasta 30 días iniciados en una ventana de 12 meses.</p><small>Orden: cantidad → recencia → nómina</small></article>
-        <article class="rule"><div class="rule-code">R2</div><h3>Larga duración</h3><p><strong>≥ 180 días</strong> de duración efectiva en al menos un episodio.</p><small>Top global o recalculado por centros</small></article>
-      </div>
-      <p class="formula dark">duración efectiva = fecha final − fecha inicial + 1</p>
-      <footer class="dark">AbsenceLens · 05</footer>
-      <aside class="notes">[Sources]\n- docs/03-reglas-negocio.md</aside>
-    </section>
-
-    <section>
-      <div class="eyebrow">Funcionalidades</div>
-      <h2>Un flujo completo conserva la trazabilidad de principio a fin</h2>
-      <div class="features">
-        <article><span>01</span><strong>Importación</strong><p>Lectura local de un único archivo XLSX.</p></article>
-        <article><span>02</span><strong>Validación</strong><p>Perfil versionado, tipos y errores saneados.</p></article>
-        <article><span>03</span><strong>Análisis</strong><p>Recurrencia corta y larga duración.</p></article>
-        <article><span>04</span><strong>Revisión</strong><p>Filtros, ordenación y fichas explicables.</p></article>
-        <article><span>05</span><strong>Exportación</strong><p>Listados y detalle en Excel generado en memoria.</p></article>
-      </div>
-      <footer>AbsenceLens · 06</footer>
-      <aside class="notes">[Sources]\n- docs/02-requisitos-mvp.md\n- docs/17-correccion-redisenio-revision-exportacion.md</aside>
-    </section>
-
-    <section>
-      <div class="eyebrow dark">Arquitectura</div>
-      <h2 class="dark">El dominio permanece independiente de la interfaz y de Excel</h2>
-      <div class="architecture" aria-label="Capas de arquitectura">
-        <div><span>Entrada</span><strong>Archivo XLSX local</strong></div>
-        <div><span>Infraestructura</span><strong>Lectura, validación y exportación</strong></div>
-        <div class="core"><span>Aplicación</span><strong>Casos de uso y modelos de revisión</strong></div>
-        <div><span>Dominio</span><strong>Fechas, episodios y reglas R1/R2</strong></div>
-        <div><span>Presentación</span><strong>Angular y componentes accesibles</strong></div>
-      </div>
-      <p class="takeaway dark">Una arquitectura limpia, aplicada con la complejidad justa para el problema.</p>
-      <footer class="dark">AbsenceLens · 07</footer>
-      <aside class="notes">[Sources]\n- docs/07-arquitectura-pruebas-demo.md\n- docs/adr/0001-lector-xlsx.md\n- docs/adr/0002-escritor-xlsx.md</aside>
-    </section>
-
-    <section>
-      <div class="eyebrow">Decisiones clave</div>
-      <h2>Las restricciones del problema definen la solución técnica</h2>
-      <div class="decisions">
-        <div><span>D1</span><strong>Local-first</strong><small>El archivo permanece en el navegador y en memoria.</small></div>
-        <div><span>D2</span><strong>Sin backend</strong><small>Menos superficie de riesgo, coste y operación.</small></div>
-        <div><span>D3</span><strong>Dominio puro</strong><small>Las reglas no dependen de Angular ni de Excel.</small></div>
-        <div><span>D4</span><strong>Fechas explícitas</strong><small>Cálculos inclusivos sin zona horaria.</small></div>
-        <div><span>D5</span><strong>Explicabilidad</strong><small>Cada coincidencia conserva episodios y criterios.</small></div>
-        <div><span>D6</span><strong>Dependencias proporcionales</strong><small>Bibliotecas concretas, encapsuladas y sustituibles.</small></div>
-      </div>
-      <footer>AbsenceLens · 08</footer>
-      <aside class="notes">[Sources]\n- docs/06-decisiones-pendientes-roadmap.md\n- docs/adr/0001-lector-xlsx.md\n- docs/adr/0002-escritor-xlsx.md\n- docs/adr/0003-angular-material.md</aside>
-    </section>
-
-    <section>
-      <div class="eyebrow">Calidad verificable</div>
-      <h2>Las reglas están respaldadas por casos conocidos y automatización</h2>
-      <div class="metrics"><div><strong>42</strong><span>pruebas automatizadas</span></div><div><strong>23</strong><span>casos de aceptación</span></div><div><strong>73</strong><span>filas sintéticas</span></div><div><strong>0</strong><span>datos reales en pruebas</span></div></div>
-      <div class="quality-path"><span>Commit</span><b>→</b><span>Pruebas</span><b>→</b><span>Build</span><b>→</b><span>GitHub Pages</span></div>
-      <p class="ai">GPT-5.6 y Codex apoyan el desarrollo; la revisión, las decisiones y la aceptación siguen siendo humanas.</p>
-      <footer>AbsenceLens · 09</footer>
-      <aside class="notes">[Sources]\n- Suite automatizada del repositorio\n- docs/10-casos-aceptacion.md\n- docs/16-verificacion-i003.md</aside>
-    </section>
-
-    <section>
-      <div class="eyebrow dark">Tecnología y entrega</div>
-      <h2 class="dark">Un frontend estático basta para resolver el problema</h2>
-      <div class="stack">
-        <div class="stack-copy"><p><strong>Angular 22</strong> + TypeScript</p><p>Angular Material + Signals</p><p>read-excel-file + write-excel-file</p><p>Vitest + GitHub Actions</p></div>
-        <div class="deploy"><span>Repositorio público</span><b>main</b><i></i><span>Build reproducible</span><b>CI</b><i></i><span>Despliegue gratuito</span><b>Pages</b></div>
-      </div>
-      <p class="takeaway dark">Sin servidores que mantener, credenciales de prueba ni costes de infraestructura.</p>
-      <footer class="dark">AbsenceLens · 10</footer>
-      <aside class="notes">[Sources]\n- package.json\n- .github/workflows/ci.yml\n- .github/workflows/deploy-pages.yml</aside>
-    </section>
-
-    <section>
-      <div class="eyebrow">Uso responsable</div>
-      <h2>La herramienta encuentra coincidencias; las personas deciden</h2>
-      <div class="boundary"><div class="product"><span>AbsenceLens</span><strong>Importa</strong><strong>Calcula</strong><strong>Explica</strong></div><div class="human"><span>Revisión humana</span><strong>Contrasta</strong><strong>Contextualiza</strong><strong>Decide</strong></div></div>
-      <p class="boundary-copy">Sin predicción individual, puntuaciones, investigación automática ni recomendaciones disciplinarias.</p>
-      <footer>AbsenceLens · 11</footer>
-      <aside class="notes">[Sources]\n- docs/02-requisitos-mvp.md\n- docs/05-privacidad-etica-seguridad.md</aside>
-    </section>
-
-    <section>
-      <div class="eyebrow">Conclusión</div>
-      <h2>La propuesta resuelve el problema sin ampliar innecesariamente su alcance</h2>
-      <div class="conclusions">
-        <div><strong>Útil</strong><p>Reduce búsquedas repetitivas y concentra la revisión.</p></div>
-        <div><strong>Explicable</strong><p>Las reglas, fechas y episodios permanecen visibles.</p></div>
-        <div><strong>Responsable</strong><p>Privacidad local y decisiones siempre humanas.</p></div>
-      </div>
-      <footer>AbsenceLens · 12</footer>
-      <aside class="notes">[Sources]\n- docs/01-contexto-y-vision.md\n- docs/05-privacidad-etica-seguridad.md</aside>
-    </section>
-
-    <section class="closing">
-      <div class="eyebrow">AbsenceLens</div>
-      <h2>Menos búsqueda manual.<br><span>Más trazabilidad para revisar.</span></h2>
-      <p>Gracias por conocer el proyecto.</p>
-      <div class="links"><a href="https://thelukasarts.github.io/AbsenceLens/">Aplicación</a><a href="https://github.com/TheLukasArts/AbsenceLens">Código y documentación</a></div>
-      <footer>AbsenceLens · 13</footer>
-      <aside class="notes">[Sources]\n- README.md</aside>
-    </section>
-  </div></div>
-  <script src="./vendor/reveal/reveal.js"></script>
-  <script>
-    Reveal.initialize({hash:true,controls:true,controlsTutorial:false,progress:true,slideNumber:"c/t",showSlideNumber:"all",center:false,transition:"fade",backgroundTransition:"fade",width:1280,height:720,margin:0,minScale:.2,maxScale:2,keyboard:true,touch:true});
-  </script>
-</body>
+      Reveal.on('slidechanged', updateDeckNumber);
+    </script>
+  </body>
 </html>
