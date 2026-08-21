@@ -94,6 +94,10 @@
 | D-088 | La URL de entrega del vídeo es una ruta propia y estable del despliegue, `/AbsenceLens/video/`, en lugar de un enlace directo a una plataforma. Permite publicar la dirección definitiva antes de disponer del vídeo y cambiar después su destino sin alterar la entrega. |
 | D-089 | El archivo de ejemplo se ofrece dentro de la aplicación como enlace de descarga a un asset propio. Se descarta un botón de carga automática mediante `fetch`: contradiría ADR-0001 y rompería la garantía de que la aplicación no realiza peticiones de red relacionadas con los datos. |
 | D-090 | Se incorpora la carga por arrastrar y soltar como complemento del selector de archivo, manteniendo el selector nativo como camino principal y accesible por teclado. Cierra M-006. |
+| D-091 | La volumetría de referencia se corrige: un archivo habitual contiene unas **150.000 filas**, de las cuales alrededor de 21.500 son episodios de baja y el resto días de vacaciones, que se registran uno por fila. La cifra anterior de 15.000 contabilizaba únicamente episodios y contradecía lo observado. |
+| D-092 | Los libros sintéticos de prueba los produce `scripts/generate-sample-workbook.mjs`, determinista mediante semilla fija. Se mantienen dos: uno de 15.000 filas publicado junto a la aplicación para que cualquiera pueda probarla, y otro de 150.000 en `samples/` para medir rendimiento. El fixture de aceptación no se genera y no debe modificarse. |
+| D-093 | La aplicación mide la duración de la importación y del análisis con el reloj de alta resolución del navegador y la muestra en los resúmenes de cada fase. Solo se conserva el tiempo transcurrido: ningún dato del archivo interviene en la medición ni queda registrado. Sustituye las estimaciones aproximadas por cifras comprobables. |
+| D-094 | Se descarta el uso de Web Worker. La medición sobre 150.000 filas muestra que el análisis completo tarda 0,26 s y que el coste lo domina la decodificación del `.xlsx`, que ocurre antes de que haya nada que mostrar. Cierra el punto correspondiente de las decisiones técnicas reversibles. |
 ## Preguntas abiertas
 
 Estas preguntas no bloquean el primer incremento vertical si las capacidades asociadas permanecen fuera de él.
@@ -127,7 +131,6 @@ Estas preguntas no bloquean el primer incremento vertical si las capacidades aso
 ## Decisiones técnicas todavía reversibles
 
 - Librería de lectura y escritura `.xlsx`.
-- Uso de Web Worker según mediciones reales.
 - Librería de gráficos.
 - Gestión de estado en Angular.
 - Estrategia de PWA/offline.
