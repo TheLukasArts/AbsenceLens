@@ -312,6 +312,7 @@ export class App {
     this.resetResults();
     this.loadedFileName.set('');
     this.importErrors.set([]);
+    this.importDuration.set('');
 
     if (!file.name.toLocaleLowerCase().endsWith('.xlsx')) {
       this.fail([{ severity: 'error', code: 'FILE_EXTENSION_INVALID', column: 'Estructura' }]);
@@ -382,7 +383,7 @@ export class App {
       this.statusMessage.set('');
       this.analysisExpanded.set(false);
       this.snackBar.open(
-        this.translate.instant('analysis.completed', { seconds: this.analysisDuration() }),
+        this.translate.instant('analysis.completedIn', { seconds: this.analysisDuration() }),
         undefined,
         { duration: 2500 },
       );
@@ -629,6 +630,7 @@ export class App {
     this.analysisExpanded.set(false);
     this.importErrors.set([]);
     this.importedRowCount.set(0);
+    this.importDuration.set('');
     this.resetResults();
     this.cutoffIso.set(formatIsoDate(lastCompleteMonthCutoff(this.clock.today())));
     if (this.fileInput) {
