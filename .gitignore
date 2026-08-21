@@ -45,3 +45,6 @@ Thumbs.db
 
 # Material del máster: no redistribuible desde este repositorio
 /docs/Documentacion-TFM-*.pdf
+
+# Informe de la última medición de rendimiento
+/rendimiento-ultima-ejecucion.txt
