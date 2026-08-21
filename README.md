@@ -26,10 +26,11 @@ La aplicación no determina si una ausencia está justificada, no clasifica a la
 ## Probarlo en dos minutos
 
 1. Abre [la aplicación desplegada](https://thelukasarts.github.io/AbsenceLens/).
-2. Descarga el [Excel de ejemplo](https://github.com/TheLukasArts/AbsenceLens/raw/main/samples/absence-lens-aceptacion-v1.xlsx) y selecciónalo en la pantalla de importación.
-3. Mantén la fecha de corte `31/07/2026` y ejecuta el análisis.
-4. Debes obtener **7 candidatos de recurrencia corta** y **9 de larga duración**.
-5. Abre la ficha de cualquiera para ver por qué aparece, y exporta el informe si quieres.
+2. Descarga el Excel de ejemplo desde el enlace del propio panel de importación, o usa el [conjunto de aceptación](https://github.com/TheLukasArts/AbsenceLens/raw/main/samples/absence-lens-aceptacion-v1.xlsx).
+3. Selecciónalo o arrástralo sobre la zona de importación.
+4. Mantén la fecha de corte `31/07/2026` y ejecuta el análisis.
+5. Con el conjunto de aceptación debes obtener **7 candidatos de recurrencia corta** y **9 de larga duración**.
+6. Abre la ficha de cualquiera para ver por qué aparece, y exporta el informe si quieres.
 
 Todos los libros del repositorio son sintéticos: ninguno procede de una exportación real ni reproduce combinaciones de datos empresariales.
 
@@ -45,7 +46,7 @@ Los resultados esperados del libro de aceptación están detallados en [Casos de
 
 | Capacidad | Qué hace |
 |---|---|
-| **Importación validada** | Lee un único `.xlsx` contra el perfil versionado `ausencias-v1`. Conserva `Nº Nómina` como texto con sus ceros iniciales e interpreta las fechas sin depender de la zona horaria del navegador. |
+| **Importación validada** | Lee un único `.xlsx` contra el perfil versionado `ausencias-v1`, mediante el selector o arrastrando el archivo. Conserva `Nº Nómina` como texto con sus ceros iniciales e interpreta las fechas sin depender de la zona horaria del navegador. |
 | **Errores saneados** | Informa de estructura, fila, columna y código de validación, nunca del contenido de las celdas. |
 | **Análisis reproducible** | Fecha de corte configurable, con el último día del mes completo anterior como valor inicial. Mismas entradas, mismos resultados. |
 | **Explicación por candidato** | Episodios contabilizados y descartados con su motivo, ventana evaluada, duración efectiva, advertencias y criterio de ordenación. |

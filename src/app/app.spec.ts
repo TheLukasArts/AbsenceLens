@@ -27,13 +27,32 @@ describe('App', () => {
     expect(text).toContain('Tu archivo no sale del dispositivo');
     expect(text).toContain('Carga y valida un archivo para configurar el análisis');
     expect(text).toContain('Seleccionar archivo de ejemplo');
+    expect(text).toContain('O arrastra el archivo hasta aquí');
+    expect(text).toContain('Descarga un Excel de ejemplo');
     expect(text).toContain('Recurrencia corta');
     expect(text).toContain('Larga duración');
     expect(text).not.toMatch(/R1-v1|R2-v1/);
   });
 
-  it('importa, analiza, abre la ficha R1 y elimina la sesión', async () => {
-    const root = await importWorkbook(buildWorkbook());
+  it('ofrece el ejemplo como descarga y no lo carga por su cuenta', async () => {
+    await TestBed.configureTestingModule({ imports: [App] }).compileComponents();
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+
+    const link = root.querySelector<HTMLAnchorElement>('.sample-hint a')!;
+    expect(link.getAttribute('href')).toBe('samples/absence-lens-demo-15000.xlsx');
+    expect(link.hasAttribute('download')).toBe(true);
+  });
+
+  it('acepta un archivo soltado sobre la zona de importación', async () => {
+    const root = await importWorkbook(buildWorkbook(), 'drop');
+
+    expect(root.textContent).toContain('synthetic.xlsx');
+    expect(root.textContent).toContain('Filas válidas');
+  });
+
+  it('importa, analiza, abre la ficha R1 y elimina la sesión', async () => {    const root = await importWorkbook(buildWorkbook());
 
     expect(root.textContent).toContain('synthetic.xlsx');
     expect(root.textContent).toContain('Filas válidas');
@@ -176,7 +195,10 @@ let readWorkbook: ReturnType<typeof vi.fn>;
 let createReport: ReturnType<typeof vi.fn>;
 let saveDownload: ReturnType<typeof vi.fn>;
 
-async function importWorkbook(workbook: WorkbookData): Promise<HTMLElement> {
+async function importWorkbook(
+  workbook: WorkbookData,
+  via: 'input' | 'drop' = 'input',
+): Promise<HTMLElement> {
   readWorkbook = vi.fn().mockResolvedValue(workbook);
   createReport = vi.fn().mockResolvedValue(new Blob(['synthetic-report']));
   saveDownload = vi.fn();
@@ -192,13 +214,22 @@ async function importWorkbook(workbook: WorkbookData): Promise<HTMLElement> {
   activeFixture = TestBed.createComponent(App);
   activeFixture.detectChanges();
   const root = activeFixture.nativeElement as HTMLElement;
-  const fileInput = root.querySelector<HTMLInputElement>('input[type="file"]')!;
   const file = new File(['synthetic'], 'synthetic.xlsx');
-  Object.defineProperty(fileInput, 'files', {
-    configurable: true,
-    value: { item: () => file, length: 1 },
-  });
-  fileInput.dispatchEvent(new Event('change'));
+
+  if (via === 'drop') {
+    const zone = root.querySelector<HTMLElement>('.file-drop')!;
+    const drop = new Event('drop', { bubbles: true }) as DragEvent;
+    Object.defineProperty(drop, 'dataTransfer', { value: { files: [file] } });
+    zone.dispatchEvent(drop);
+  } else {
+    const fileInput = root.querySelector<HTMLInputElement>('input[type="file"]')!;
+    Object.defineProperty(fileInput, 'files', {
+      configurable: true,
+      value: { item: () => file, length: 1 },
+    });
+    fileInput.dispatchEvent(new Event('change'));
+  }
+
   await activeFixture.whenStable();
   activeFixture.detectChanges();
   return root;

@@ -109,6 +109,10 @@ type ResultSection = ResultView | 'review';
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(window:dragover)': 'blockWindowDrop($event)',
+    '(window:drop)': 'blockWindowDrop($event)',
+  },
 })
 export class App {
   @ViewChild('fileInput') private fileInput?: ElementRef<HTMLInputElement>;
@@ -156,6 +160,8 @@ export class App {
   protected readonly maxCutoffIso = formatIsoDate(this.clock.today());
   protected readonly importDuration = signal('');
   protected readonly analysisDuration = signal('');
+  protected readonly dragging = signal(false);
+  private dragDepth = 0;
   protected readonly formattedCutoff = computed(() => {
     const cutoff = parseIsoDate(this.cutoffIso());
     return cutoff ? formatSpanishDate(cutoff) : '—';
@@ -308,7 +314,51 @@ export class App {
     const input = event.target as HTMLInputElement;
     const file = input.files?.item(0);
     if (!file) return;
+    await this.importFile(file);
+  }
 
+  protected onDragEnter(event: DragEvent): void {
+    event.preventDefault();
+    if (this.busy()) return;
+    // Los hijos de la zona emiten sus propios eventos: se cuenta la profundidad para no parpadear.
+    this.dragDepth += 1;
+    this.dragging.set(true);
+  }
+
+  protected onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = this.busy() ? 'none' : 'copy';
+  }
+
+  protected onDragLeave(): void {
+    this.dragDepth = Math.max(0, this.dragDepth - 1);
+    if (this.dragDepth === 0) this.dragging.set(false);
+  }
+
+  protected async onDrop(event: DragEvent): Promise<void> {
+    event.preventDefault();
+    this.dragDepth = 0;
+    this.dragging.set(false);
+    if (this.busy()) return;
+
+    const files = event.dataTransfer?.files;
+    if (!files || files.length === 0) return;
+    if (files.length > 1) {
+      this.snackBar.open(this.translate.instant('import.singleFileOnly'), undefined, {
+        duration: 3000,
+      });
+      return;
+    }
+
+    await this.importFile(files[0]);
+  }
+
+  // Soltar fuera de la zona haría que el navegador abriese el archivo y se perdiese la sesión.
+  protected blockWindowDrop(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  private async importFile(file: File): Promise<void> {
     this.resetResults();
     this.loadedFileName.set('');
     this.importErrors.set([]);

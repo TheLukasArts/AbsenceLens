@@ -59,16 +59,26 @@
           </mat-expansion-panel>
 
           <div class="import-grid">
-            <label class="file-drop" [class.busy]="busy()">
+            <label
+              class="file-drop"
+              [class.busy]="busy()"
+              [class.dragging]="dragging()"
+              (dragenter)="onDragEnter($event)"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave()"
+              (drop)="onDrop($event)"
+            >
               <span class="file-icon" aria-hidden="true">XLSX</span>
               <span>
                 <strong>{{ 'import.selectFile' | translate }}</strong>
+                <small>{{ 'import.dragHint' | translate }}</small>
                 <small>{{ 'import.localOnly' | translate }}</small>
               </span>
               <input
                 #fileInput
                 type="file"
                 accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                [attr.aria-describedby]="'import-sample-hint'"
                 [disabled]="busy()"
                 (change)="selectFile($event)"
               />
@@ -81,6 +91,13 @@
               </div>
             }
           </div>
+
+          <p class="sample-hint" id="import-sample-hint">
+            {{ 'import.sampleIntro' | translate }}
+            <a href="samples/absence-lens-demo-15000.xlsx" download>
+              {{ 'import.sampleLink' | translate }}
+            </a>
+          </p>
 
           @if (importErrors().length > 0) {
             <div class="error-panel" role="alert" aria-labelledby="errors-title">
