@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "sample:small": "node scripts/generate-sample-workbook.mjs --rows 15000 --out public/samples/absence-lens-demo-15000.xlsx",
+    "sample:large": "node scripts/generate-sample-workbook.mjs --rows 150000 --out samples/absence-lens-rendimiento-150000.xlsx"
   },
   "private": true,
   "packageManager": "pnpm@11.19.0",

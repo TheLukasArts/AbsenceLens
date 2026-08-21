@@ -67,7 +67,7 @@ El inventario de `Ubicación - Código` puede responder a un estándar sectorial
 - SheetJS, fórmulas y valores guardados: https://docs.sheetjs.com/docs/csf/features/formulae/
 - ExcelJS, modelo de celdas con fórmula: https://github.com/exceljs/exceljs/blob/master/MODEL.md#formula-cell-model
 
-DuckDB-Wasm se estudió para análisis Excel genérico, pero no está decidido ni parece necesario para 15.000 filas y dos reglas principales. La elección de librería `.xlsx` debe valorar lectura, escritura, licencia, tamaño, soporte de fechas y funcionamiento en navegador.
+DuckDB-Wasm se estudió para análisis Excel genérico, pero no está decidido ni parece necesario para dos reglas principales sobre un archivo de este volumen. La elección de librería `.xlsx` debe valorar lectura, escritura, licencia, tamaño, soporte de fechas y funcionamiento en navegador.
 
 ## Uso de OpenAI
 

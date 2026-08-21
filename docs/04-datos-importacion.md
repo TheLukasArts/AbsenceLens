@@ -7,7 +7,7 @@
 - Cabecera única en la primera fila.
 - Sin fórmulas, macros, contraseña, celdas combinadas, filas ocultas ni hojas auxiliares.
 - Fechas mostradas en formato español `DD/MM/AAAA`.
-- Aproximadamente 15.000 filas y 8,4 MB cuando incluye vacaciones.
+- Aproximadamente 150.000 filas cuando incluye vacaciones: unos 21.500 episodios de baja y el resto días de vacaciones, registrados uno por fila.
 - Histórico completo de aproximadamente dos años.
 - El archivo se puede regenerar en cualquier momento.
 - No existen incrementales: cada export contiene todo el histórico disponible.
@@ -108,7 +108,7 @@ Definir antes de implementar si los errores bloquean toda la importación o perm
 No utilizar el archivo empresarial real. Crear desde cero:
 
 - un archivo pequeño de aceptación con casos conocidos;
-- un archivo de aproximadamente 15.000 filas para rendimiento y demo;
+- un archivo de aproximadamente 150.000 filas para rendimiento y demo;
 - vocabulario categórico autorizado combinado de forma totalmente sintética;
 - identificadores sintéticos de seis dígitos, generados desde cero y tratados como texto;
 - fechas y perfiles totalmente inventados;

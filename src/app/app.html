@@ -113,6 +113,12 @@
             <span>{{ 'import.validRows' | translate }}</span>
             <strong>{{ importedRowCount() }}</strong>
           </div>
+          @if (importDuration()) {
+            <div>
+              <span>{{ 'import.duration' | translate }}</span>
+              <strong>{{ importDuration() }} s</strong>
+            </div>
+          }
           <button
             mat-stroked-button
             type="button"
@@ -161,6 +167,12 @@
               'analysis.completedPeriod' | translate: { cutoff: formattedCutoff() }
             }}</strong>
           </div>
+          @if (analysisDuration()) {
+            <div>
+              <span>{{ 'analysis.duration' | translate }}</span>
+              <strong>{{ analysisDuration() }} s</strong>
+            </div>
+          }
           <div class="summary-actions">
             <button mat-stroked-button type="button" (click)="modifyAnalysis()">
               {{ 'analysis.modify' | translate }}
