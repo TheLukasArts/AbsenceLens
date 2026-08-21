@@ -2,9 +2,9 @@
 
 ## Estado
 
-Medición realizada el 21/08/2026 sobre el conjunto sintético de 150.000 filas. Los tiempos son
-reproducibles: el libro se genera con semilla fija y la prueba automatizada vuelve a medirlos en cada
-ejecución de la suite.
+Medición de referencia realizada el 21/08/2026 sobre el **despliegue oficial** en GitHub Pages, con un archivo real de 150.000 filas. La aplicación mide sus propias fases y muestra la duración en pantalla, de modo que la cifra es directamente comprobable por cualquiera que repita la operación.
+
+Existe además una medición local reproducible sobre un conjunto sintético equivalente, que sirve de guardia de regresiones en la suite automatizada.
 
 ## Por qué existe este documento
 
@@ -39,6 +39,11 @@ todo el episodio. Por eso el número de filas es casi siete veces el número de 
 - La columna de días declarados se rellena de forma deliberadamente inconsistente, ya que la
   aplicación descarta ese valor.
 
+El número de empleados **no es un parámetro fijo**: se deriva del volumen para mantener la densidad de
+referencia de unos 10,75 episodios de baja por empleado en dos años. Esa densidad es la que determina
+que aparezcan candidatos de recurrencia corta, porque la regla exige cinco episodios dentro de la
+ventana de doce meses. Un libro pequeño repartido entre una plantilla grande no produce ninguno.
+
 Se regenera con:
 
 ```bash
@@ -50,24 +55,50 @@ mediciones son comparables entre ejecuciones.
 
 ## Resultados
 
-Entorno: Windows, Node.js 24, ejecución local mediante la suite automatizada.
+### Medición de referencia: despliegue oficial y archivo real
+
+Entorno: `https://thelukasarts.github.io/AbsenceLens/`, navegador de escritorio, archivo real de 150.000 filas.
 
 | Fase | Tiempo |
 | --- | --- |
-| Lectura y decodificación del `.xlsx` | 3,72 s |
-| Validación del perfil de importación | 0,30 s |
-| Análisis completo (normalización, R1, R2 y proyección de revisión) | 0,26 s |
+| Importación completa (lectura, decodificación y validación) | **5,4 s** |
+| Análisis completo (normalización, R1, R2 y proyección de revisión) | **0,2 s** |
 
-Resultados obtenidos sobre ese conjunto: 968 candidatos de recurrencia corta, 507 de larga duración
-y 21.495 filas de revisión.
+Filas válidas reconocidas: 149.999.
 
-**El coste está dominado por la lectura del archivo**, no por las reglas de negocio. Descomprimir y
-decodificar el `.xlsx` supone más del ochenta por ciento del tiempo total; validar y analizar
-150.000 filas cuesta poco más de medio segundo entre ambas fases.
+**El coste está dominado por la lectura del archivo**, no por las reglas de negocio. Analizar 150.000
+filas cuesta dos décimas de segundo; lo que se percibe como espera es descomprimir y decodificar el
+`.xlsx`.
+
+Del archivo empleado solo se anotaron la duración y el número de filas, conforme al procedimiento
+recogido en `docs/05-privacidad-etica-seguridad.md`. No se copió al repositorio ni se conservó.
+
+### Medición local reproducible: conjunto sintético
+
+Entorno: Windows, Node.js 24, suite automatizada.
+
+| Fase | Tiempo orientativo |
+| --- | --- |
+| Lectura y decodificación del `.xlsx` | 4 a 15 s |
+| Validación del perfil de importación | 0,3 a 0,7 s |
+| Análisis completo | 0,3 a 0,7 s |
+
+Estos valores **varían mucho según la carga de la máquina**: la misma prueba mide 3,7 s de lectura con
+el equipo en reposo y casi 15 s con el servidor de desarrollo y el compilador en marcha. Por eso la
+prueba automatizada no comprueba un tiempo concreto, sino que valida y analiza por debajo de diez
+segundos cada uno: el objetivo es detectar una regresión de orden de magnitud, no medir la máquina.
+
+### Resultados obtenidos sobre los conjuntos sintéticos
+
+| Libro | Filas | Candidatos R1 | Candidatos R2 |
+| --- | --- | --- | --- |
+| Demostración | 15.000 | 106 | 44 |
+| Rendimiento | 150.000 | 968 | 507 |
 
 > Los recuentos de candidatos no son representativos de un caso real. Los datos sintéticos se
 > distribuyen de forma uniforme, lo que produce muchas más coincidencias de las que aparecerían en un
-> histórico real. El conjunto sirve para medir volumen y tiempo, no para estimar resultados.
+> histórico real. Los conjuntos sirven para medir volumen y tiempo y para tener ejemplos con
+> resultados en ambas reglas, no para estimar resultados de negocio.
 
 ## Medición desde la aplicación
 
@@ -98,6 +129,8 @@ ejecutable sin él.
 | --- | --- | --- |
 | 20/08/2026 | Se elimina un recorrido cuadrático en la validación por fila | Evita el bloqueo de la interfaz al importar archivos grandes con errores |
 | 21/08/2026 | Primera medición registrada con el conjunto sintético de 150.000 filas | Referencia para detectar regresiones |
+| 21/08/2026 | Medición de referencia sobre el despliegue oficial con archivo real | Sustituye las estimaciones aproximadas por cifras comprobables en producción |
+| 21/08/2026 | El generador deriva la plantilla del volumen en lugar de fijarla | El libro de demostración pasa de no producir ningún candidato de recurrencia corta a producir 106 |
 
 ## Decisiones pendientes
 
