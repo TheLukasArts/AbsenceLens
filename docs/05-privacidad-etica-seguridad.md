@@ -44,6 +44,18 @@ El número de nómina permite que una persona autorizada identifique al empleado
 
 El motor de reglas utilizará únicamente identificador, fechas, descripción y centro. La aplicación conservará durante la sesión el resto de columnas porque el usuario ha confirmado que son necesarias para filtrar, ordenar y realizar la revisión posterior. Esta decisión debe explicarse en la memoria y revisarse si el uso cambia.
 
+## Mediciones con archivos no sintéticos
+
+Comprobar el comportamiento con el volumen real exigió abrir una vez un archivo autorizado en la aplicación. El procedimiento seguido, y el que debe repetirse si vuelve a hacer falta, es este:
+
+- el archivo se abre exclusivamente en local, desde la máquina de quien lo tiene autorizado;
+- no se copia al repositorio, ni a la carpeta de muestras, ni a ningún directorio del proyecto;
+- no se conserva después de la medición;
+- solo se anota la duración observada y el número de filas: ningún valor, identificador ni combinación de columnas sale de la sesión;
+- la cifra publicada se acompaña siempre de la aclaración de que procede de una medición puntual sobre un archivo que no forma parte del proyecto.
+
+Las mediciones reproducibles se realizan sobre el conjunto sintético equivalente descrito en `docs/19-verificacion-rendimiento.md`, que sí está versionado y puede regenerarse.
+
 ## Gráficos de perfil
 
 - Mostrar exclusivamente agregados por rango de edad, ámbito, contrato y sexo.

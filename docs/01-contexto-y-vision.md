@@ -10,7 +10,7 @@ La aplicación se concibe para el uso individual de esa persona. No se integra e
 
 ## Problema
 
-Partiendo de un histórico de aproximadamente dos años y unas 15.000 filas, resulta costoso encontrar empleados cuyas ausencias cumplan patrones como recurrencia de procesos cortos o episodios de larga duración. Actualmente se aplican sucesivos filtros en Excel, se revisan resultados visualmente y se ordenan los candidatos.
+Partiendo de un histórico de aproximadamente dos años y unas 150.000 filas, resulta costoso encontrar empleados cuyas ausencias cumplan patrones como recurrencia de procesos cortos o episodios de larga duración. De esas filas, alrededor de 21.500 corresponden a episodios de baja y el resto a días de vacaciones, que se registran uno por fila. Actualmente se aplican sucesivos filtros en Excel, se revisan resultados visualmente y se ordenan los candidatos.
 
 El problema no es específico de una organización ni de un sector: se reproduce en cualquier entorno donde el análisis de ausencias se resuelva sobre exportaciones en hoja de cálculo.
 
