@@ -8,6 +8,7 @@ import { BrowserDownload } from './infrastructure/browser-download';
 import { ReadExcelFileWorkbookReader } from './infrastructure/read-excel-file-workbook-reader';
 import { WriteExcelFileReportExporter } from './infrastructure/write-excel-file-report-exporter';
 import { App } from './app';
+import { addDays, formatSpanishDate, parseIsoDate } from './domain/local-date';
 
 describe('App', () => {
   beforeEach(() => {
@@ -169,6 +170,174 @@ describe('App', () => {
     expect(report.sheets.map((sheet) => sheet.name)).toEqual(['Ficha']);
     expect(report.sheets[0].rows.flat()).not.toContain('Vacaciones');
   });
+
+  it('muestra la ubicación después de episodios tomando solo el inicio contabilizado más reciente', async () => {
+    const root = await analyzeWorkbook(
+      workbook([
+        ...shortRows(),
+        absenceRow('000001', '01/06/2026', '01/06/2026', 'BCN'),
+        absenceRow('000001', '01/06/2026', '01/06/2026', 'BIO'),
+        absenceRow('000001', '01/07/2026', '31/07/2026', 'AGP'),
+        absenceRow('000001', '01/08/2026', '01/08/2026', 'ALC'),
+      ]),
+    );
+    const table = resultTable(root, 'r1');
+    const headers = [...table.querySelectorAll('th')].map((th) => th.textContent?.trim());
+    expect(headers.slice(0, 5)).toEqual([
+      'Posición',
+      'Nº Nómina',
+      'Episodios',
+      'Ubicación - Código',
+      'Inicio más reciente',
+    ]);
+    expect(table.querySelectorAll('tbody tr td')[3].textContent?.trim()).toBe('BCN');
+    expect(table.querySelector('th:first-child')?.hasAttribute('mat-sort-header')).toBe(false);
+    expect(table.querySelector('th:last-child')?.hasAttribute('mat-sort-header')).toBe(false);
+  });
+
+  it('ordena todos los candidatos antes del límite de diez, admite teclado y conserva la exportación', async () => {
+    const root = await analyzeWorkbook(buildManyCandidates());
+    const table = resultTable(root, 'r1');
+    expect(tableIds(table)).toHaveLength(10);
+    expect(tableIds(table)).not.toContain('000001');
+    const defaultOrder = tableIds(table);
+
+    const header = sortHeader(table, 'employeeId');
+    const control = header.querySelector<HTMLElement>('[role="button"]')!;
+    expect(control.tabIndex).toBe(0);
+    expect(control.getAttribute('aria-describedby')).toBeTruthy();
+    control.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true }),
+    );
+    detectChanges();
+    expect(header.getAttribute('aria-sort')).toBe('ascending');
+    expect(tableIds(table)[0]).toBe('000001');
+    expect(table.querySelector('tbody tr td')?.textContent?.trim()).toBe('1');
+    expect(root.querySelector('.table-order')?.textContent).toContain('Nº Nómina, ascendente');
+
+    findButton(root, 'Ver todos').click();
+    detectChanges();
+    expect(tableIds(table)).toHaveLength(12);
+    expect(tableIds(table)[0]).toBe('000001');
+    findButton(root, 'Ver primeros 10').click();
+    detectChanges();
+    expect(tableIds(table)).toHaveLength(10);
+
+    root.querySelector<HTMLButtonElement>('[data-testid="export-report"]')!.click();
+    await activeFixture.whenStable();
+    const report = createReport.mock.calls[0][0] as CandidateReport;
+    expect(report.sheets[1].rows).toHaveLength(13);
+    expect(report.sheets[1].rows[1][0]).toBe('000012');
+    expect(report.sheets[1].rows[0]).not.toContain('Ubicación - Código');
+
+    clickSort(table, 'employeeId');
+    expect(header.getAttribute('aria-sort')).toBe('descending');
+    expect(tableIds(table)[0]).toBe('000012');
+    clickSort(table, 'employeeId');
+    expect(header.getAttribute('aria-sort')).toBe('none');
+    expect(tableIds(table)).toEqual(defaultOrder);
+  });
+
+  it('mantiene órdenes independientes en las tres pestañas y filtra R2 antes de ordenar', async () => {
+    const root = await analyzeWorkbook(buildManyCandidates());
+    clickSort(resultTable(root, 'r1'), 'employeeId');
+    findButton(root, 'Larga duración').click();
+    detectChanges();
+    let table = resultTable(root, 'r2');
+    expect(tableIds(table)).not.toContain('000001');
+    clickSort(table, 'maximumDuration');
+    expect(tableIds(table)[0]).toBe('000001');
+
+    const filter = [...root.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')].find(
+      (input) => input.closest('mat-checkbox')?.textContent?.includes('BCN'),
+    )!;
+    filter.click();
+    detectChanges();
+    expect(tableIds(table)).toEqual(['000002', '000004', '000006', '000008', '000010', '000012']);
+
+    root.querySelector<HTMLButtonElement>('[data-testid="export-report-r2"]')!.click();
+    await activeFixture.whenStable();
+    const report = createReport.mock.calls[0][0] as CandidateReport;
+    expect(report.sheets[1].rows).toHaveLength(7);
+    expect(report.sheets[1].rows[1][0]).toBe('000012');
+
+    findButton(root, 'Revisión').click();
+    detectChanges();
+    table = root.querySelector<HTMLTableElement>('table[mat-table]')!;
+    const defaultReview = tableIds(table);
+    expect(defaultReview[0]).toBe('000001');
+    clickSort(table, 'episodeCount');
+    clickSort(table, 'episodeCount');
+    expect(tableIds(table)[0]).toBe('000012');
+    clickSort(table, 'episodeCount');
+    expect(tableIds(table)).toEqual(defaultReview);
+    expect(sortHeader(table, 'employeeId').getAttribute('aria-sort')).toBe('ascending');
+
+    findButton(root, 'Recurrencia corta').click();
+    detectChanges();
+    table = resultTable(root, 'r1');
+    expect(tableIds(table)[0]).toBe('000001');
+    expect(sortHeader(table, 'employeeId').getAttribute('aria-sort')).toBe('ascending');
+    findButton(root, 'Larga duración').click();
+    detectChanges();
+    table = resultTable(root, 'r2');
+    expect(tableIds(table)[0]).toBe('000002');
+    expect(sortHeader(table, 'maximumDuration').getAttribute('aria-sort')).toBe('ascending');
+    clickSort(table, 'maximumDuration');
+    clickSort(table, 'maximumDuration');
+    expect(tableIds(table)[0]).toBe('000012');
+  });
+
+  it('restaura las ordenaciones y el límite de diez al analizar de nuevo, importar y borrar', async () => {
+    const root = await analyzeWorkbook(buildManyCandidates());
+    clickSort(resultTable(root, 'r1'), 'employeeId');
+    findButton(root, 'Ver todos').click();
+    detectChanges();
+    findButton(root, 'Larga duración').click();
+    detectChanges();
+    clickSort(resultTable(root, 'r2'), 'employeeId');
+    findButton(root, 'Revisión').click();
+    detectChanges();
+    clickSort(root.querySelector<HTMLTableElement>('table[mat-table]')!, 'episodeCount');
+    clickSort(root.querySelector<HTMLTableElement>('table[mat-table]')!, 'episodeCount');
+    findButton(root, 'Modificar análisis').click();
+    detectChanges();
+    findButton(root, 'Ejecutar análisis').click();
+    detectChanges();
+    expect(tableIds(root.querySelector<HTMLTableElement>('table[mat-table]')!)[0]).toBe('000001');
+    findButton(root, 'Larga duración').click();
+    detectChanges();
+    expect(tableIds(resultTable(root, 'r2'))[0]).toBe('000012');
+    findButton(root, 'Recurrencia corta').click();
+    detectChanges();
+    expect(tableIds(resultTable(root, 'r1'))).toHaveLength(10);
+    expect(tableIds(resultTable(root, 'r1'))[0]).toBe('000012');
+
+    clickSort(resultTable(root, 'r1'), 'employeeId');
+    findButton(root, 'Cambiar archivo').click();
+    detectChanges();
+    selectSyntheticFile(root);
+    await activeFixture.whenStable();
+    setCutoff(root);
+    findButton(root, 'Ejecutar análisis').click();
+    detectChanges();
+    expect(tableIds(resultTable(root, 'r1'))[0]).toBe('000012');
+
+    clickSort(resultTable(root, 'r1'), 'employeeId');
+    findButton(root, 'Borrar datos y empezar de nuevo').click();
+    await activeFixture.whenStable();
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"]')!;
+    findButton(dialog, 'Borrar datos').click();
+    await activeFixture.whenStable();
+    await waitForDialogClose();
+    detectChanges();
+    selectSyntheticFile(root);
+    await activeFixture.whenStable();
+    setCutoff(root);
+    findButton(root, 'Ejecutar análisis').click();
+    detectChanges();
+    expect(tableIds(resultTable(root, 'r1'))[0]).toBe('000012');
+  });
 });
 
 let activeFixture: ReturnType<typeof TestBed.createComponent<App>>;
@@ -192,6 +361,13 @@ async function importWorkbook(workbook: WorkbookData): Promise<HTMLElement> {
   activeFixture = TestBed.createComponent(App);
   activeFixture.detectChanges();
   const root = activeFixture.nativeElement as HTMLElement;
+  selectSyntheticFile(root);
+  await activeFixture.whenStable();
+  activeFixture.detectChanges();
+  return root;
+}
+
+function selectSyntheticFile(root: HTMLElement): void {
   const fileInput = root.querySelector<HTMLInputElement>('input[type="file"]')!;
   const file = new File(['synthetic'], 'synthetic.xlsx');
   Object.defineProperty(fileInput, 'files', {
@@ -199,9 +375,6 @@ async function importWorkbook(workbook: WorkbookData): Promise<HTMLElement> {
     value: { item: () => file, length: 1 },
   });
   fileInput.dispatchEvent(new Event('change'));
-  await activeFixture.whenStable();
-  activeFixture.detectChanges();
-  return root;
 }
 
 function detectChanges(): void {
@@ -238,6 +411,55 @@ function buildWorkbookWithLongDurations(): WorkbookData {
     absenceRow('000011', '01/02/2025', '20/08/2025', 'BCN'),
     absenceRow('000012', '01/01/2025', '29/06/2025', 'BCN'),
   ]);
+}
+
+function buildManyCandidates(): WorkbookData {
+  return workbook(
+    Array.from({ length: 12 }, (_, index) => {
+      const employeeId = String(index + 1).padStart(6, '0');
+      const centre = index % 2 === 0 ? 'MAD' : 'BCN';
+      return [
+        ...Array.from({ length: index + 5 }, (_, day) => {
+          const date = `${String(day + 1).padStart(2, '0')}/07/2026`;
+          return absenceRow(employeeId, date, date, centre);
+        }),
+        absenceRow(
+          employeeId,
+          '01/01/2025',
+          formatSpanishDate(addDays(parseIsoDate('2025-01-01')!, 179 + index)),
+          centre,
+        ),
+      ];
+    }).flat(),
+  );
+}
+
+async function analyzeWorkbook(data: WorkbookData): Promise<HTMLElement> {
+  const root = await importWorkbook(data);
+  setCutoff(root);
+  findButton(root, 'Ejecutar análisis').click();
+  detectChanges();
+  return root;
+}
+
+function resultTable(root: HTMLElement, view: 'r1' | 'r2'): HTMLTableElement {
+  return root.querySelector<HTMLTableElement>(`#panel-${view} table`)!;
+}
+
+function tableIds(table: HTMLTableElement): string[] {
+  return [...table.querySelectorAll('tbody .employee-id')].map((cell) => cell.textContent!.trim());
+}
+
+function sortHeader(table: HTMLTableElement, column: string): HTMLElement {
+  return (
+    table.querySelector<HTMLElement>(`th[data-sort-column="${column}"]`) ??
+    table.querySelector<HTMLElement>(`th.mat-column-${column}`)!
+  );
+}
+
+function clickSort(table: HTMLTableElement, column: string): void {
+  sortHeader(table, column).click();
+  detectChanges();
 }
 
 function absenceRow(
