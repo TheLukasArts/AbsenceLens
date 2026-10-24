@@ -36,6 +36,15 @@ import {
 } from './application/candidate-review';
 import { SystemClock, lastCompleteMonthCutoff } from './application/clock';
 import {
+  LongDurationSortColumn,
+  RecurrenceSortColumn,
+  TableSortDirection,
+  buildRecurrenceTableRows,
+  longEpisodeStatus,
+  sortLongDurationTableRows,
+  sortRecurrenceTableRows,
+} from './application/candidate-table';
+import {
   EXPECTED_HEADERS,
   ImportIssue,
   ValidatedAbsenceRecord,
@@ -150,6 +159,32 @@ export class App {
   protected readonly selectedReviewEmployeeId = signal<string | null>(null);
   protected readonly showAllR1 = signal(false);
   protected readonly showAllR2 = signal(false);
+  protected readonly recurrenceSort = signal<{
+    active: RecurrenceSortColumn | '';
+    direction: TableSortDirection;
+  }>({ active: '', direction: '' });
+  protected readonly longDurationSort = signal<{
+    active: LongDurationSortColumn | '';
+    direction: TableSortDirection;
+  }>({ active: '', direction: '' });
+  protected readonly recurrenceColumnLabels: Record<RecurrenceSortColumn, string> = {
+    employeeId: 'common.payrollNumber',
+    episodeCount: 'results.episodes',
+    locationCode: 'results.locationCode',
+    mostRecentStart: 'results.mostRecentStart',
+    window: 'results.evaluatedWindow',
+  };
+  protected readonly longDurationColumnLabels: Record<LongDurationSortColumn, string> = {
+    employeeId: 'common.payrollNumber',
+    maximumDuration: 'results.maxDuration',
+    start: 'results.start',
+    effectiveEnd: 'common.end',
+    workCentre: 'common.centre',
+    longEpisodeCount: 'results.longEpisodes',
+    status: 'results.state',
+  };
+  protected readonly recurrenceHeaders = Object.entries(this.recurrenceColumnLabels);
+  protected readonly longDurationHeaders = Object.entries(this.longDurationColumnLabels);
   protected readonly candidateSortColumn = signal<CandidateReviewSortColumn>('employeeId');
   protected readonly candidateSortDirection = signal<CandidateReviewSortDirection>('asc');
   protected readonly cutoffIso = signal(formatIsoDate(lastCompleteMonthCutoff(this.clock.today())));
@@ -257,11 +292,33 @@ export class App {
       ? this.visibleCandidates().length
       : this.visibleLongCandidates().length,
   );
+  private readonly recurrenceTableRows = computed(() =>
+    buildRecurrenceTableRows(this.candidates()),
+  );
+  private readonly sortedRecurrenceRows = computed(() =>
+    sortRecurrenceTableRows(
+      this.recurrenceTableRows(),
+      this.recurrenceSort().active,
+      this.recurrenceSort().direction,
+    ),
+  );
+  private readonly sortedLongDurationRows = computed(() =>
+    sortLongDurationTableRows(
+      this.longTop(),
+      this.longDurationSort().active,
+      this.longDurationSort().direction,
+      {
+        active: this.translate.instant('common.active'),
+        finalized: this.translate.instant('common.finalized'),
+        trimmed: this.translate.instant('results.trimmed'),
+      },
+    ),
+  );
   protected readonly displayedCandidates = computed(() =>
-    this.showAllR1() ? this.candidates() : this.candidates().slice(0, 10),
+    this.showAllR1() ? this.sortedRecurrenceRows() : this.sortedRecurrenceRows().slice(0, 10),
   );
   protected readonly displayedLongCandidates = computed(() =>
-    this.showAllR2() ? this.longTop() : this.longTop().slice(0, 10),
+    this.showAllR2() ? this.sortedLongDurationRows() : this.sortedLongDurationRows().slice(0, 10),
   );
   private readonly candidateReviewSummaries = computed(() =>
     buildCandidateReviewSummaries(this.candidates(), this.longCandidates()),
@@ -378,6 +435,7 @@ export class App {
       this.selectedCentres.set([]);
       this.showAllR1.set(false);
       this.showAllR2.set(false);
+      this.resetTableSorts();
       this.analysisDuration.set(elapsedSecondsSince(startedAt));
       this.phase.set('results');
       this.statusMessage.set('');
@@ -500,8 +558,50 @@ export class App {
       'workCentre',
     ];
     if (!columns.includes(sort.active as CandidateReviewSortColumn)) return;
+    if (!sort.direction) {
+      this.candidateSortColumn.set('employeeId');
+      this.candidateSortDirection.set('asc');
+      return;
+    }
     this.candidateSortColumn.set(sort.active as CandidateReviewSortColumn);
     this.candidateSortDirection.set(sort.direction === 'desc' ? 'desc' : 'asc');
+  }
+
+  protected changeRecurrenceSort(sort: Sort): void {
+    if (!Object.hasOwn(this.recurrenceColumnLabels, sort.active)) return;
+    this.recurrenceSort.set({
+      active: sort.direction ? (sort.active as RecurrenceSortColumn) : '',
+      direction: sort.direction,
+    });
+  }
+
+  protected changeLongDurationSort(sort: Sort): void {
+    if (!Object.hasOwn(this.longDurationColumnLabels, sort.active)) return;
+    this.longDurationSort.set({
+      active: sort.direction ? (sort.active as LongDurationSortColumn) : '',
+      direction: sort.direction,
+    });
+  }
+
+  protected tableOrderDescription(view: ResultView): string {
+    const sort = view === 'r1' ? this.recurrenceSort() : this.longDurationSort();
+    if (!sort.active || !sort.direction) {
+      return this.translate.instant(
+        view === 'r1' ? 'rules.shortRecurrence.order' : 'rules.longDuration.order',
+      );
+    }
+    const labels: Readonly<Record<string, string>> =
+      view === 'r1' ? this.recurrenceColumnLabels : this.longDurationColumnLabels;
+    return this.translate.instant('tables.order', {
+      column: this.translate.instant(labels[sort.active]),
+      direction: this.translate.instant(`tables.${sort.direction}`),
+    });
+  }
+
+  protected sortActionDescription(columnKey: string): string {
+    return this.translate.instant('tables.sortAction', {
+      column: this.translate.instant(columnKey),
+    });
   }
 
   protected async exportCurrentView(): Promise<void> {
@@ -654,13 +754,12 @@ export class App {
   }
 
   protected longEpisodeStatus(episode: AbsenceEpisode): string {
-    if (episode.warnings.includes('OPEN_END')) {
-      return 'Activo';
-    }
-    if (episode.warnings.includes('END_AFTER_CUTOFF')) {
-      return 'Recortado al corte';
-    }
-    return 'Finalizado';
+    const keys = {
+      active: 'common.active',
+      trimmed: 'results.trimmed',
+      finalized: 'common.finalized',
+    };
+    return this.translate.instant(keys[longEpisodeStatus(episode)]);
   }
 
   protected issueLabel(issue: ImportIssue): string {
@@ -856,6 +955,9 @@ export class App {
   }
 
   private resetResults(): void {
+    this.resetTableSorts();
+    this.showAllR1.set(false);
+    this.showAllR2.set(false);
     this.candidates.set([]);
     this.longCandidates.set([]);
     this.analysisWarnings.set([]);
@@ -874,6 +976,13 @@ export class App {
     this.reviewSortDirection.set('asc');
     this.exportError.set('');
     this.analysisDuration.set('');
+  }
+
+  private resetTableSorts(): void {
+    this.recurrenceSort.set({ active: '', direction: '' });
+    this.longDurationSort.set({ active: '', direction: '' });
+    this.candidateSortColumn.set('employeeId');
+    this.candidateSortDirection.set('asc');
   }
 }
 

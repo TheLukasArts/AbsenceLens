@@ -315,7 +315,14 @@
               <div>
                 @if (candidates().length > 10) {
                   <button mat-button type="button" (click)="showAllR1.set(!showAllR1())">
-                    {{ (showAllR1() ? 'common.showTopTen' : 'common.all') | translate }}
+                    {{
+                      (showAllR1()
+                        ? recurrenceSort().direction
+                          ? 'common.showFirstTen'
+                          : 'common.showTopTen'
+                        : 'common.all'
+                      ) | translate
+                    }}
                   </button>
                 }
                 <button
@@ -332,21 +339,42 @@
             @if (candidates().length === 0) {
               <p class="empty-result">{{ 'rules.shortRecurrence.empty' | translate }}</p>
             } @else {
+              <p class="table-order">{{ tableOrderDescription('r1') }}</p>
               <div class="table-wrap">
-                <table>
+                <table
+                  matSort
+                  [matSortActive]="recurrenceSort().active"
+                  [matSortDirection]="recurrenceSort().direction"
+                  (matSortChange)="changeRecurrenceSort($event)"
+                >
                   <caption class="sr-only">
                     {{
                       'rules.shortRecurrence.tableCaption' | translate
                     }}
+                    ·
+                    {{
+                      tableOrderDescription('r1')
+                    }}
                   </caption>
                   <thead>
                     <tr>
-                      <th scope="col">Posición</th>
-                      <th scope="col">Nº Nómina</th>
-                      <th scope="col">Episodios</th>
-                      <th scope="col">Inicio más reciente</th>
-                      <th scope="col">Ventana evaluada</th>
-                      <th scope="col"><span class="sr-only">Acciones</span></th>
+                      <th scope="col">{{ 'common.position' | translate }}</th>
+                      @for (header of recurrenceHeaders; track header[0]) {
+                        <th
+                          scope="col"
+                          [mat-sort-header]="header[0]"
+                          [attr.data-sort-column]="header[0]"
+                          [sortActionDescription]="sortActionDescription(header[1])"
+                          [matTooltip]="
+                            header[0] === 'locationCode' ? t('results.locationTooltip') : ''
+                          "
+                        >
+                          {{ header[1] | translate }}
+                        </th>
+                      }
+                      <th scope="col">
+                        <span class="sr-only">{{ 'common.actions' | translate }}</span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -362,6 +390,9 @@
                         </td>
                         <td>
                           <strong>{{ candidate.episodeCount }}</strong>
+                        </td>
+                        <td>
+                          <code>{{ candidate.locationCode || '—' }}</code>
                         </td>
                         <td>{{ formatDate(candidate.mostRecentStart) }}</td>
                         <td>
@@ -432,7 +463,14 @@
               <div>
                 @if (longTop().length > 10) {
                   <button mat-button type="button" (click)="showAllR2.set(!showAllR2())">
-                    {{ (showAllR2() ? 'common.showTopTen' : 'common.all') | translate }}
+                    {{
+                      (showAllR2()
+                        ? longDurationSort().direction
+                          ? 'common.showFirstTen'
+                          : 'common.showTopTen'
+                        : 'common.all'
+                      ) | translate
+                    }}
                   </button>
                 }
                 <button
@@ -450,24 +488,39 @@
             @if (longTop().length === 0) {
               <p class="empty-result">{{ 'rules.longDuration.empty' | translate }}</p>
             } @else {
+              <p class="table-order">{{ tableOrderDescription('r2') }}</p>
               <div class="table-wrap">
-                <table>
+                <table
+                  matSort
+                  [matSortActive]="longDurationSort().active"
+                  [matSortDirection]="longDurationSort().direction"
+                  (matSortChange)="changeLongDurationSort($event)"
+                >
                   <caption class="sr-only">
                     {{
                       'rules.longDuration.tableCaption' | translate
                     }}
+                    ·
+                    {{
+                      tableOrderDescription('r2')
+                    }}
                   </caption>
                   <thead>
                     <tr>
-                      <th scope="col">Posición</th>
-                      <th scope="col">Nº Nómina</th>
-                      <th scope="col">Duración máxima</th>
-                      <th scope="col">Inicio</th>
-                      <th scope="col">Final efectivo</th>
-                      <th scope="col">Centro</th>
-                      <th scope="col">Episodios largos</th>
-                      <th scope="col">Estado</th>
-                      <th scope="col"><span class="sr-only">Acciones</span></th>
+                      <th scope="col">{{ 'common.position' | translate }}</th>
+                      @for (header of longDurationHeaders; track header[0]) {
+                        <th
+                          scope="col"
+                          [mat-sort-header]="header[0]"
+                          [attr.data-sort-column]="header[0]"
+                          [sortActionDescription]="sortActionDescription(header[1])"
+                        >
+                          {{ header[1] | translate }}
+                        </th>
+                      }
+                      <th scope="col">
+                        <span class="sr-only">{{ 'common.actions' | translate }}</span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -629,13 +682,25 @@
                 aria-label="Candidatos combinados para revisión"
               >
                 <ng-container matColumnDef="employeeId">
-                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Nº Nómina</th>
+                  <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    [sortActionDescription]="sortActionDescription('common.payrollNumber')"
+                  >
+                    {{ 'common.payrollNumber' | translate }}
+                  </th>
                   <td mat-cell *matCellDef="let row">
                     <code class="employee-id">{{ row.employeeId }}</code>
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="rules">
-                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                  <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    [sortActionDescription]="sortActionDescription('review.rules')"
+                  >
                     {{ 'review.rules' | translate }}
                   </th>
                   <td mat-cell *matCellDef="let row">
@@ -648,25 +713,51 @@
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="episodeCount">
-                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                  <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    [sortActionDescription]="sortActionDescription('review.shortEpisodes')"
+                  >
                     {{ 'review.shortEpisodes' | translate }}
                   </th>
                   <td mat-cell *matCellDef="let row">{{ row.recurrence?.episodeCount ?? '—' }}</td>
                 </ng-container>
                 <ng-container matColumnDef="mostRecentStart">
-                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Inicio reciente</th>
+                  <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    [sortActionDescription]="sortActionDescription('review.recentStart')"
+                  >
+                    {{ 'review.recentStart' | translate }}
+                  </th>
                   <td mat-cell *matCellDef="let row">
                     {{ row.recurrence ? formatDate(row.recurrence.mostRecentStart) : '—' }}
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="maximumDuration">
-                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Duración máxima</th>
+                  <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    [sortActionDescription]="sortActionDescription('results.maxDuration')"
+                  >
+                    {{ 'results.maxDuration' | translate }}
+                  </th>
                   <td mat-cell *matCellDef="let row">
                     {{ row.longDuration ? row.longDuration.maximumDuration + ' días' : '—' }}
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="workCentre">
-                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Centro</th>
+                  <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    [sortActionDescription]="sortActionDescription('common.centre')"
+                  >
+                    {{ 'common.centre' | translate }}
+                  </th>
                   <td mat-cell *matCellDef="let row">
                     {{ row.longDuration?.representativeEpisode?.workCentre ?? '—' }}
                   </td>

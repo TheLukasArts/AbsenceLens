@@ -34,6 +34,7 @@ export const ES_TRANSLATIONS: TranslationObject = {
     preparing: 'Procesando…',
     removeFilters: 'Limpiar filtros',
     showTopTen: 'Ver top 10',
+    showFirstTen: 'Ver primeros 10',
   },
   rules: {
     shortRecurrence: {
@@ -42,15 +43,14 @@ export const ES_TRANSLATIONS: TranslationObject = {
       order: 'Orden: cantidad, recencia y nómina.',
       empty:
         'No se encontraron coincidencias de recurrencia corta para la fecha de corte seleccionada.',
-      tableCaption: 'Candidatos de recurrencia corta ordenados según la regla configurada',
+      tableCaption: 'Candidatos de recurrencia corta',
     },
     longDuration: {
       label: 'Larga duración',
       summary: 'Desde 180 días efectivos; una fila por empleado.',
       order: 'Orden: duración, inicio y nómina.',
       empty: 'No se encontraron candidatos de larga duración para los centros seleccionados.',
-      tableCaption:
-        'Empleados con episodios de larga duración ordenados según la regla configurada',
+      tableCaption: 'Empleados con episodios de larga duración',
     },
   },
   import: {
@@ -65,7 +65,8 @@ export const ES_TRANSLATIONS: TranslationObject = {
     changeFile: 'Cambiar archivo',
     showDetails: 'Ver detalles',
     hideDetails: 'Ocultar detalles',
-    ready: 'Importación finalizada en {{seconds}} s. {{count}} filas válidas, listas para analizar.',
+    ready:
+      'Importación finalizada en {{seconds}} s. {{count}} filas válidas, listas para analizar.',
     duration: 'Tiempo de importación',
     waiting: 'Esperando un archivo de ejemplo.',
     reading: 'Leyendo el libro localmente…',
@@ -119,10 +120,20 @@ export const ES_TRANSLATIONS: TranslationObject = {
     mostRecentStart: 'Inicio más reciente',
     evaluatedWindow: 'Ventana evaluada',
     episodes: 'Episodios',
+    locationCode: 'Ubicación - Código',
+    locationTooltip: 'Centro del episodio contabilizado con inicio más reciente.',
+    start: 'Inicio',
+    trimmed: 'Recortado al corte',
     longEpisodes: 'Episodios largos',
     state: 'Estado',
     openDetail: 'Ver ficha',
     detailTooltip: 'Ver ficha y explicación',
+  },
+  tables: {
+    sortAction: 'Ordenar por {{column}}. Alterna ascendente, descendente y orden inicial.',
+    order: 'Orden: {{column}}, {{direction}}.',
+    asc: 'ascendente',
+    desc: 'descendente',
   },
   review: {
     eyebrow: 'Detalle operativo',
